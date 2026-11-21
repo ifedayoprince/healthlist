@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Healthlist web
 
-## Getting Started
+The patient-facing and doctor-facing prototype for Healthlist. Everything is
+mocked in the browser — there are no API calls and no real accounts, payments,
+or health records.
 
-First, run the development server:
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Mock flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Landing** — `Continue` starts sign-in. `Connect to my assistant` opens the
+   MCP setup modal with the connector URL.
+2. **Sign in** — any email + password works. An unknown email creates a new
+   account and sends the user to the assessment.
+3. **Assessment** — five steps, saved to the mock store on completion.
+4. **Dashboard** — greeting, intake requests, and payment methods.
+5. **Intake request** — remove products, view a listing, or request a review.
+   If a product needs extra information, the primary action becomes
+   `Next: Provide additional info`.
+6. **Doctor console** — `/doctor` shows every request, the patient's assessment,
+   and approve/decline actions.
 
-## Learn More
+Useful demo inputs:
 
-To learn more about Next.js, take a look at the following resources:
+- Returning patient: `amara@example.com` (any password)
+- New patient: any unused email
+- Doctor console: [http://localhost:3000/doctor](http://localhost:3000/doctor)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use the demo patient account to see seeded intake requests and payment methods.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Mock data
 
-## Deploy on Vercel
+Seed data lives in `lib/mock-data.ts`. State is kept in `localStorage` under
+`healthlist.mock.v1` so the patient and doctor views stay in sync in the same
+browser. Use `Reset demo data` in the dashboard or doctor console to restore the
+seed.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Set `NEXT_PUBLIC_MCP_URL` to override the connector URL shown in the assistant
+modal.
