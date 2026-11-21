@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { relations } from "drizzle-orm/_relations";
-import { boolean, index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -9,6 +9,18 @@ export const users = pgTable("users", {
     password: text('password').notNull(),
     joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow()
 });
+
+export const authSessions = pgTable("auth_sessions", {
+    id: uuid('id').defaultRandom().primaryKey(),
+    token: varchar('token', { length: 50 }).notNull(),
+    userId: uuid('user_id')
+        .notNull()
+        .unique()
+        .references(() => users.id),
+    issuedAt: timestamp('issued_at', { withTimezone: true }).defaultNow().notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    maxLifespan: timestamp('max_lifespan', { withTimezone: true }).notNull(),
+})
 
 export const assessments = pgTable("assessments", {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -28,6 +40,7 @@ export const assessmentQuestions = pgTable("assessment_questions", {
     id: uuid('id').defaultRandom().primaryKey(),
     key: varchar('key', { length: 50 }).notNull().unique(),
     question: text('question').notNull(),
+    isRequired: boolean('is_required').default(false).notNull(),
     type: questionTypesEnum('type').notNull(),
     options: jsonb('options').$type<{
         key: string;
