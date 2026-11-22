@@ -1,10 +1,13 @@
-import { Controller, Get, HttpCode, Param } from '@nestjs/common';
-import { ListingService } from './listing.service.js';
+import { BadRequestException, Controller, Get, HttpCode, Param, Query } from '@nestjs/common';
+import { ListingService, searchQueries } from './listing.service.js';
 import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.js';
+import z from 'zod';
+
+
 
 @Controller('listing')
 export class ListingController {
-  constructor(private readonly listingService: ListingService) {}
+  constructor(private readonly listingService: ListingService) { }
 
   // Out-of-scope. (Listings are seeded by seed script for this PoC)
   // @Post()
@@ -15,8 +18,25 @@ export class ListingController {
   @Get()
   @AllowMCPAccess()
   @HttpCode(200)
-  findAll() {
-    return this.listingService.findAll();
+  search(@Query() queries: z.infer<typeof searchQueries>) {
+    const search = searchQueries.safeParse(queries);
+    if (!search.success) {
+      throw new BadRequestException(`Invalid search queries provided. ${z.treeifyError(search.error)}`);
+    }
+    return this.listingService.search(search.data);
+  }
+
+  @Get()
+  @AllowMCPAccess()
+  @HttpCode(200)
+  findAll(
+    @Query('nextCursor') nextCursor?: string,
+    @Query('limit') limit?: string
+  ) {
+    return this.listingService.findAll(
+      limit ? parseInt(limit) : 10,
+      nextCursor
+    );
   }
 
   @Get(':id')

@@ -1,14 +1,12 @@
-import logger from "./logger.js";
-
-export async function trycatch<T>(
+export async function trycatch<T, Y>(
     func: () => T,
-    cb: (e: Error) => void
-): Promise<T | null> {
+    cb: (e: Error) => Y
+): Promise<T | Y | null> {
     try {
         return await func();
     } catch (e) {
-        cb(e as Error);
-        return null;
+        const res = cb(e as Error);
+        return res ?? null;
     }
 }
 

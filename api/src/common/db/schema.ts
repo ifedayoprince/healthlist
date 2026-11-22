@@ -74,9 +74,10 @@ export const listings = pgTable("listings", {
     requiredInfo: varchar("required_info")
         .array()
         .default([])
-        .notNull()
+        .notNull(),
+    createdAt: timestamp('created_at', {withTimezone: true}).defaultNow().notNull()
 });
-export type Listing = typeof listingDocuments.$inferSelect;
+export type Listing = typeof listings.$inferSelect;
 
 export const listingDocuments = pgTable("listing_documents", {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -88,10 +89,10 @@ export const listingDocuments = pgTable("listing_documents", {
     name: varchar('name', { length: 50 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 
-    excerpt: text('excerpt').default(""),
+    excerpt: varchar('excerpt', {length: 255}).default(""),
     metadata: jsonb('metadata').$type<{
         price: number;
-        category: string;
+        category: string[];
     }>(),
 
     /** On listing submission or document update, a SOTA model will conduct deep-research to verify the claims and statements in the `body` against known information about the composition of the drug/product. */

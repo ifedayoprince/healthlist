@@ -1,0 +1,1495 @@
+{
+  "type": "base",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "fba8a37b-013c-46ba-b528-e6a12935eeb5",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "intake_status"
+      ],
+      "writes": [
+        "s|enum|public.intake_status",
+        "n|enum|public.intake_status",
+        "e|enum|public.intake_status",
+        "n|type|public.intake_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "question_types"
+      ],
+      "writes": [
+        "s|enum|public.question_types",
+        "n|enum|public.question_types",
+        "e|enum|public.question_types",
+        "n|type|public.question_types"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "assessment_answers"
+      ],
+      "writes": [
+        "s|tbl|public.assessment_answers",
+        "n|tbl|public.assessment_answers",
+        "e|tbl|public.assessment_answers",
+        "n|rel|public.assessment_answers",
+        "n|type|public.assessment_answers",
+        "n|rel|public.assessment_answers_pkey",
+        "n|rel|public.assessment_answers_assessment_id_assessment_question_id_unique"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "assessment_questions"
+      ],
+      "writes": [
+        "s|tbl|public.assessment_questions",
+        "n|tbl|public.assessment_questions",
+        "e|tbl|public.assessment_questions",
+        "n|rel|public.assessment_questions",
+        "n|type|public.assessment_questions",
+        "n|rel|public.assessment_questions_pkey",
+        "n|rel|public.assessment_questions_key_key"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.question_types"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "assessments"
+      ],
+      "writes": [
+        "s|tbl|public.assessments",
+        "n|tbl|public.assessments",
+        "e|tbl|public.assessments",
+        "n|rel|public.assessments",
+        "n|type|public.assessments",
+        "n|rel|public.assessments_pkey",
+        "n|rel|public.assessments_user_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "auth_sessions"
+      ],
+      "writes": [
+        "s|tbl|public.auth_sessions",
+        "n|tbl|public.auth_sessions",
+        "e|tbl|public.auth_sessions",
+        "n|rel|public.auth_sessions",
+        "n|type|public.auth_sessions",
+        "n|rel|public.auth_sessions_pkey",
+        "n|rel|public.auth_sessions_user_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "intake_listings"
+      ],
+      "writes": [
+        "s|tbl|public.intake_listings",
+        "n|tbl|public.intake_listings",
+        "e|tbl|public.intake_listings",
+        "n|rel|public.intake_listings",
+        "n|type|public.intake_listings",
+        "n|rel|public.intake_listings_pkey",
+        "n|rel|public.intake_listings_listing_id_intake_id_unique"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "intakes"
+      ],
+      "writes": [
+        "s|tbl|public.intakes",
+        "n|tbl|public.intakes",
+        "e|tbl|public.intakes",
+        "n|rel|public.intakes",
+        "n|type|public.intakes",
+        "n|rel|public.intakes_pkey",
+        "n|rel|public.intakes_key_key"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.intake_status"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "listing_documents"
+      ],
+      "writes": [
+        "s|tbl|public.listing_documents",
+        "n|tbl|public.listing_documents",
+        "e|tbl|public.listing_documents",
+        "n|rel|public.listing_documents",
+        "n|type|public.listing_documents",
+        "n|rel|public.listing_documents_pkey",
+        "n|rel|public.listing_documents_listing_id_version_unique"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "listings"
+      ],
+      "writes": [
+        "s|tbl|public.listings",
+        "n|tbl|public.listings",
+        "e|tbl|public.listings",
+        "n|rel|public.listings",
+        "n|type|public.listings",
+        "n|rel|public.listings_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "users"
+      ],
+      "writes": [
+        "s|tbl|public.users",
+        "n|tbl|public.users",
+        "e|tbl|public.users",
+        "n|rel|public.users",
+        "n|type|public.users",
+        "n|rel|public.users_pkey",
+        "n|rel|public.users_email_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "listing_documents",
+        "listing_doc_one_active_idx"
+      ],
+      "writes": [
+        "s|idx|public.listing_doc_one_active_idx",
+        "n|idx|public.listing_doc_one_active_idx",
+        "e|idx|public.listing_doc_one_active_idx",
+        "n|rel|public.listing_doc_one_active_idx"
+      ],
+      "reads": [
+        "n|tbl|public.listing_documents",
+        "n|sch|public",
+        "n|col|public.listing_documents.listing_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "assessment_answers"
+      ],
+      "writes": [
+        "s|fk|public.assessment_answers.assessment_answers_assessment_id_assessments_id_fkey",
+        "n|fk|public.assessment_answers.assessment_answers_assessment_id_assessments_id_fkey",
+        "e|fk|public.assessment_answers.assessment_answers_assessment_id_assessments_id_fkey",
+        "n|con|public.assessment_answers.assessment_answers_assessment_id_assessments_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.assessment_answers",
+        "n|sch|public",
+        "n|tbl|public.assessments",
+        "n|sch|public",
+        "n|col|public.assessment_answers.assessment_id",
+        "n|col|public.assessments.id",
+        "e|uniqueness|public.assessments.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "assessment_answers"
+      ],
+      "writes": [
+        "s|fk|public.assessment_answers.assessment_answers_nvccM4gKPo6R_fkey",
+        "n|fk|public.assessment_answers.assessment_answers_nvccM4gKPo6R_fkey",
+        "e|fk|public.assessment_answers.assessment_answers_nvccM4gKPo6R_fkey",
+        "n|con|public.assessment_answers.assessment_answers_nvccM4gKPo6R_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.assessment_answers",
+        "n|sch|public",
+        "n|tbl|public.assessment_questions",
+        "n|sch|public",
+        "n|col|public.assessment_answers.assessment_question_id",
+        "n|col|public.assessment_questions.id",
+        "e|uniqueness|public.assessment_questions.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "assessments"
+      ],
+      "writes": [
+        "s|fk|public.assessments.assessments_user_id_users_id_fkey",
+        "n|fk|public.assessments.assessments_user_id_users_id_fkey",
+        "e|fk|public.assessments.assessments_user_id_users_id_fkey",
+        "n|con|public.assessments.assessments_user_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.assessments",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.assessments.user_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "auth_sessions"
+      ],
+      "writes": [
+        "s|fk|public.auth_sessions.auth_sessions_user_id_users_id_fkey",
+        "n|fk|public.auth_sessions.auth_sessions_user_id_users_id_fkey",
+        "e|fk|public.auth_sessions.auth_sessions_user_id_users_id_fkey",
+        "n|con|public.auth_sessions.auth_sessions_user_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.auth_sessions",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.auth_sessions.user_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "intake_listings"
+      ],
+      "writes": [
+        "s|fk|public.intake_listings.intake_listings_intake_id_intakes_id_fkey",
+        "n|fk|public.intake_listings.intake_listings_intake_id_intakes_id_fkey",
+        "e|fk|public.intake_listings.intake_listings_intake_id_intakes_id_fkey",
+        "n|con|public.intake_listings.intake_listings_intake_id_intakes_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.intake_listings",
+        "n|sch|public",
+        "n|tbl|public.intakes",
+        "n|sch|public",
+        "n|col|public.intake_listings.intake_id",
+        "n|col|public.intakes.id",
+        "e|uniqueness|public.intakes.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "intake_listings"
+      ],
+      "writes": [
+        "s|fk|public.intake_listings.intake_listings_listing_id_listings_id_fkey",
+        "n|fk|public.intake_listings.intake_listings_listing_id_listings_id_fkey",
+        "e|fk|public.intake_listings.intake_listings_listing_id_listings_id_fkey",
+        "n|con|public.intake_listings.intake_listings_listing_id_listings_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.intake_listings",
+        "n|sch|public",
+        "n|tbl|public.listings",
+        "n|sch|public",
+        "n|col|public.intake_listings.listing_id",
+        "n|col|public.listings.id",
+        "e|uniqueness|public.listings.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "intakes"
+      ],
+      "writes": [
+        "s|fk|public.intakes.intakes_user_id_users_id_fkey",
+        "n|fk|public.intakes.intakes_user_id_users_id_fkey",
+        "e|fk|public.intakes.intakes_user_id_users_id_fkey",
+        "n|con|public.intakes.intakes_user_id_users_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.intakes",
+        "n|sch|public",
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|col|public.intakes.user_id",
+        "n|col|public.users.id",
+        "e|uniqueness|public.users.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "listing_documents"
+      ],
+      "writes": [
+        "s|fk|public.listing_documents.listing_documents_listing_id_listings_id_fkey",
+        "n|fk|public.listing_documents.listing_documents_listing_id_listings_id_fkey",
+        "e|fk|public.listing_documents.listing_documents_listing_id_listings_id_fkey",
+        "n|con|public.listing_documents.listing_documents_listing_id_listings_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.listing_documents",
+        "n|sch|public",
+        "n|tbl|public.listings",
+        "n|sch|public",
+        "n|col|public.listing_documents.listing_id",
+        "n|col|public.listings.id",
+        "e|uniqueness|public.listings.id"
+      ]
+    }
+  ],
+  "ddl": [
+    {
+      "schema": "public",
+      "name": "assessment_answers",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "assessment_questions",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "assessments",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "auth_sessions",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "intake_listings",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "intakes",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "listing_documents",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "listings",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "users",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "intake_status",
+      "values": [
+        "PENDING",
+        "IN_REVIEW",
+        "REJECTED",
+        "APPROVED"
+      ],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "name": "question_types",
+      "values": [
+        "MULTI_SELECT",
+        "YES_NO",
+        "YES_NO_TEXT",
+        "TEXT_LIST"
+      ],
+      "entityType": "enums"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "assessment_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "assessment_question_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "answer",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "answered_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "key",
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "question",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "is_required",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "type",
+      "type": "question_types",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "options",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessments",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "assessments",
+      "name": "user_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "token",
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "user_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "issued_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "expires_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "max_lifespan",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "intake_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "listing_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "key",
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "user_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "created_at",
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "status",
+      "type": "intake_status",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'PENDING'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "doctor_remark",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "listing_id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "version",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "is_active",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "name",
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "excerpt",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "''",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "metadata",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "body",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "''",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "search_tags",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 1,
+      "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "slug",
+      "type": "varchar(50)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "brand",
+      "type": "varchar(20)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "reviews",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "0",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "product_image",
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "required_info",
+      "type": "varchar",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 1,
+      "default": "'{}'",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "id",
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "gen_random_uuid()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "name",
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "email",
+      "type": "varchar(255)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "password",
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "joined_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "listing_doc_one_active_idx",
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "listing_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": true,
+      "where": "\"is_active\" = true",
+      "with": "",
+      "method": "btree",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "assessment_answers_assessment_id_assessments_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "assessment_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "assessments",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "assessment_answers_nvccM4gKPo6R_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "assessment_question_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "assessment_questions",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "assessments",
+      "name": "assessments_user_id_users_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "auth_sessions_user_id_users_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "intake_listings_intake_id_intakes_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "intake_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "intakes",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "intake_listings_listing_id_listings_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "listing_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "listings",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "intakes_user_id_users_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "users",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "listing_documents_listing_id_listings_id_fkey",
+      "nameExplicit": false,
+      "columns": [
+        "listing_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "listings",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "entityType": "fks"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "assessment_answers_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "assessment_questions_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "assessments",
+      "name": "assessments_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "auth_sessions_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "intake_listings_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "intakes_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "listing_documents_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "listings",
+      "name": "listings_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "users_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_answers",
+      "name": "assessment_answers_assessment_id_assessment_question_id_unique",
+      "nameExplicit": false,
+      "columns": [
+        "assessment_id",
+        "assessment_question_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "intake_listings",
+      "name": "intake_listings_listing_id_intake_id_unique",
+      "nameExplicit": false,
+      "columns": [
+        "listing_id",
+        "intake_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "listing_documents",
+      "name": "listing_documents_listing_id_version_unique",
+      "nameExplicit": false,
+      "columns": [
+        "listing_id",
+        "version"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "assessment_questions",
+      "name": "assessment_questions_key_key",
+      "nameExplicit": false,
+      "columns": [
+        "key"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "assessments",
+      "name": "assessments_user_id_key",
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "auth_sessions",
+      "name": "auth_sessions_user_id_key",
+      "nameExplicit": false,
+      "columns": [
+        "user_id"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "intakes",
+      "name": "intakes_key_key",
+      "nameExplicit": false,
+      "columns": [
+        "key"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "name": "users_email_key",
+      "nameExplicit": false,
+      "columns": [
+        "email"
+      ],
+      "nullsNotDistinct": false,
+      "entityType": "uniques"
+    }
+  ]
+}
