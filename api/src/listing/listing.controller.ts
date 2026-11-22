@@ -1,34 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param } from '@nestjs/common';
 import { ListingService } from './listing.service.js';
-import { CreateListingDto } from './dto/create-listing.dto.js';
-import { UpdateListingDto } from './dto/update-listing.dto.js';
+import { Public } from '../common/decorators/public.decorator.js';
+import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.js';
 
 @Controller('listing')
 export class ListingController {
   constructor(private readonly listingService: ListingService) {}
 
-  @Post()
-  create(@Body() createListingDto: CreateListingDto) {
-    return this.listingService.create(createListingDto);
-  }
+  // Out-of-scope. (Listings are seeded by seed script for this PoC)
+  // @Post()
+  // create(@Body() createListingDto: CreateListingDto) {
+  //   return this.listingService.create(createListingDto);
+  // }
 
   @Get()
+  @AllowMCPAccess()
+  @HttpCode(200)
   findAll() {
     return this.listingService.findAll();
   }
 
   @Get(':id')
+  @AllowMCPAccess()
+  @HttpCode(200)
   findOne(@Param('id') id: string) {
-    return this.listingService.findOne(+id);
+    return this.listingService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateListingDto: UpdateListingDto) {
-    return this.listingService.update(+id, updateListingDto);
-  }
+  // Out-of-scope. (Will require RBAC)
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateListingDto: UpdateListingDto) {
+  //   return this.listingService.update(+id, updateListingDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.listingService.remove(+id);
-  }
+  // Out-of-scope. (Will require RBAC)
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.listingService.remove(+id);
+  // }
 }
