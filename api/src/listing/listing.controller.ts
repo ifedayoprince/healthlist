@@ -1,6 +1,5 @@
 import { Controller, Get, HttpCode, Param } from '@nestjs/common';
 import { ListingService } from './listing.service.js';
-import { Public } from '../common/decorators/public.decorator.js';
 import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.js';
 
 @Controller('listing')

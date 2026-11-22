@@ -76,6 +76,7 @@ export const listings = pgTable("listings", {
         .default([])
         .notNull()
 });
+export type Listing = typeof listingDocuments.$inferSelect;
 
 export const listingDocuments = pgTable("listing_documents", {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -113,6 +114,7 @@ export const listingDocuments = pgTable("listing_documents", {
         .on(table.listingId)
         .where(sql`${table.isActive} = true`)
 ]);
+export type ListingDocument = typeof listingDocuments.$inferSelect;
 
 export const intakeStatusEnum = pgEnum("intake_status", [
     "PENDING",
