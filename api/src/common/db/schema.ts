@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum('user_roles', ['PATIENT', 'DOCTOR']);
 export type UserRole = (typeof userRoleEnum.enumValues)[number];
@@ -140,7 +140,9 @@ export const intakes = pgTable("intakes", {
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     submittedAt: timestamp('submitted_at', { withTimezone: true }),
     statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
-});
+}, (t) => [
+    index('intakes_created_at_idx').on(t.createdAt)
+]);
 export type Intake = typeof intakes.$inferSelect;
 
 export const intakeListings = pgTable("intake_listings", {

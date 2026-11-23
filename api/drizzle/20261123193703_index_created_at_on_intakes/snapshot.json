@@ -1,0 +1,56 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "a409f36f-6c8d-4736-a21d-159b5d214345",
+  "prevIds": [
+    "9345750d-7af7-4564-a404-11b5dd486fd2"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "intakes",
+        "intakes_created_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.intakes_created_at_idx",
+        "n|idx|public.intakes_created_at_idx",
+        "e|idx|public.intakes_created_at_idx",
+        "n|rel|public.intakes_created_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.intakes",
+        "n|sch|public",
+        "n|col|public.intakes.created_at"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "intakes",
+        "name": "intakes_created_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

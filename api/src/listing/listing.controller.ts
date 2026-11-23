@@ -4,7 +4,6 @@ import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.
 import z from 'zod';
 
 
-
 @Controller('listing')
 export class ListingController {
   constructor(private readonly listingService: ListingService) { }
@@ -18,11 +17,17 @@ export class ListingController {
   @Get('search')
   @AllowMCPAccess()
   @HttpCode(200)
-  search(@Query() queries: z.infer<typeof searchQueries>) {
+  search(@Query() queries: Record<string, any>) {
+    if (queries?.['category[]']) {
+      queries['category'] = queries["category[]"];
+      delete queries["category[]"]
+    }
+
     const search = searchQueries.safeParse(queries);
     if (!search.success) {
-      throw new BadRequestException(`Invalid search queries provided. ${z.treeifyError(search.error)}`);
+      throw new BadRequestException(`Invalid search queries provided. ${z.prettifyError(search.error)}`);
     }
+    
     return this.listingService.search(search.data);
   }
 

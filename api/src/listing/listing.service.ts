@@ -5,13 +5,15 @@ import { Listing, ListingDocument } from '../common/db/schema.js';
 import { listingDocumentJson } from '../common/db/fragments/listing-document.js';
 import { createCursor, decodeCursor } from '../common/cursor.js';
 import z from 'zod';
-import { create } from 'domain';
 
 export const searchQueries = z.object({
   search: z.string(),
-  minPrice: z.number().optional(),
-  maxPrice: z.number().optional(),
-  category: z.string().array().optional()
+  minPrice: z.coerce.number().optional(),
+  maxPrice: z.coerce.number().optional(),
+  category: z.preprocess(
+    (val) => (typeof val == 'string' ? [val] : val),
+    z.string().array().optional()
+  )
 });
 
 @Injectable()
@@ -19,7 +21,7 @@ export class ListingService {
   async search(
     query: z.infer<typeof searchQueries>
   ) {
-    await db.execute(sql`
+    const result = await db.execute(sql`
 SELECT 
   l.*,
   ${listingDocumentJson()} AS document,
@@ -27,12 +29,11 @@ SELECT
 FROM listing_documents as ld
 LEFT JOIN listings AS l
   ON ld.listing_id = l.id
+  AND ld.is_active = true
 WHERE
-  ld.is_active = true
-
-  AND (
-    ld.name ||| ${query.search}::pdb.fuzzy(2)::pdb.boost(3)
-    OR ld.search_tags ||| ${query.search}::pdb.fuzzy(2)::pdb.boost(1.5)
+  (
+    ld.name ||| ${query.search}::pdb.fuzzy(1, t)::pdb.boost(3)
+    OR ld.search_tags ||| ${query.search}::pdb.fuzzy(1, t)::pdb.boost(1.5)
     OR ld.excerpt ||| ${query.search}::pdb.boost(1.25)
     OR ld.body ||| ${query.search}
   )
@@ -45,7 +46,9 @@ WHERE
 
 ORDER BY relevance_score DESC
 LIMIT 10;
-`)
+`, 'objects');
+
+    return result;
   }
 
   async findAll(limit: number, cursorToken?: string) {
@@ -53,7 +56,7 @@ LIMIT 10;
 
     const listings = await db.query.listings.findMany({
       where: {
-        ...(cursor 
+        ...(cursor
           ? {
             id: {
               gt: cursor.id

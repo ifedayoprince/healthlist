@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -12,6 +13,7 @@ import { DoctorConsoleModule } from './doctor-console/doctor-console.module.js';
 @Module({
   imports: [
     AuthModule,
+    ScheduleModule.forRoot(),
     ListingModule,
     IntakeModule,
     AssessmentModule,

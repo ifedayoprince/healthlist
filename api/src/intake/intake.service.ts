@@ -10,9 +10,21 @@ import logger from '../common/logger.js';
 import { SubmitIntakeSessionDto } from './dto/submit-intake.dto.js';
 import { formatAnswer } from '../common/questions.js';
 import { createCursor, Cursor, decodeCursor } from '../common/cursor.js';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class IntakeService {
+
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async clearUnclaimedIntakeSessions() {
+    await db.execute(sql`
+DELETE *
+FROM intakes AS i
+WHERE
+  i.status = 'PENDING'
+  AND i.created_at < (NOW() - INTERVAL '14 days')
+`);
+  }
 
   async getIntakes(user: AuthUser, limit = 10, cursorToken?: string) {
     const cursor = decodeCursor(cursorToken);

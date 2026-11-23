@@ -1,0 +1,1 @@
+CREATE INDEX "intakes_created_at_idx" ON "intakes" ("created_at");

@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 
-export const listingDocumentJson = (alias = 'ld') => (`
+export const listingDocumentJson = (alias = 'ld') => (sql`
 CASE
   WHEN ${sql.raw(`${alias}.id`)} IS NOT NULL THEN
     json_build_object(
