@@ -4,6 +4,7 @@ import { CreateIntakeSessionDto } from './dto/create-intake.dto.js';
 import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.js';
 import { type AuthUser, CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { SubmitIntakeSessionDto } from './dto/submit-intake.dto.js';
+import { AllowAnonymous } from '../common/decorators/allow-anonymous.decorator.js';
 
 @Controller('intake')
 export class IntakeController {
@@ -27,12 +28,13 @@ export class IntakeController {
   }
 
   @Get(':key')
+  @AllowAnonymous()
   @HttpCode(200)
   async getIntakeSession(
-    @CurrentUser() user: AuthUser,
-    @Param('key') key: string
+    @Param('key') key: string,
+    @CurrentUser() user?: AuthUser
   ) {
-    return await this.intakeService.getIntakeSession(user, key);
+    return await this.intakeService.getIntakeSession(user ?? null, key);
   }
 
   @Post('submit')

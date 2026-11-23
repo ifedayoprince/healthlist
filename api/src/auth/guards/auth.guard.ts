@@ -11,6 +11,7 @@ import logger from "../../common/logger.js";
 import { AllowMCPAccess } from "../../common/decorators/allow-mpc-access.decorator.js";
 import env from "../../common/env.js";
 import { DoctorOnly } from "../../common/decorators/doctor-only.decorator.js";
+import { AllowAnonymous } from "../../common/decorators/allow-anonymous.decorator.js";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -33,6 +34,11 @@ export class AuthGuard implements CanActivate {
             return await this.authenticateMcp(mcpToken, request.ip);
         }
 
+        const isAllowAnonymous = this.reflector.getAllAndOverride(AllowAnonymous, [context.getClass(), context.getHandler()]);
+        if (isAllowAnonymous && !sessionToken)
+            return true;
+
+        // Session auth
         if (!sessionToken)
             throw new UnauthorizedException(`Missing session token.`)
 

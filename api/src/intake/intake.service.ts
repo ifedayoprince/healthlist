@@ -112,17 +112,22 @@ WHERE
   }
 
   async getIntakeSession(
-    user: AuthUser,
+    user: AuthUser | null,
     key: string,
     tx: DbClient | DbTransaction = db
   ) {
     const session = await tx.query.intakes.findFirst({
       where: {
         key,
-        OR: [
-          { userId: { isNull: true } },
-          { userId: user.id }
-        ]
+        ...(!user
+          ? { userId: { isNull: true } }
+          : {
+            OR: [
+              { userId: { isNull: true } },
+              { userId: user.id }
+            ]
+          }
+        )
       },
       with: {
         listings: {
@@ -140,40 +145,46 @@ WHERE
       throw new NotFoundException(`Intake session not found.`)
     }
 
-    const assessment = await tx.query.assessments.findFirst({
-      where: {
-        userId: user.id
-      }
-    });
-    if (!assessment) {
-      throw new InternalServerErrorException(`Assessment entry not available.`);
-    }
-
-    const questionKeys = new Set(session.listings
-      .flatMap((a) => a.additionalQuestions));
-
-    const questions = session.status == "PENDING" && questionKeys.size > 0
-      ? await tx.query.assessmentQuestions.findMany({
-        where: {
-          key: {
-            in: [...questionKeys]
-          }
-        },
-        with: {
-          assessmentAnswers: {
-            where: {
-              assessmentId: assessment.id
-            }
-          }
-        }
-      })
-      : [];
-
     const { userId: _, ...sess } = session;
 
+    if (user) {
+      const assessment = await tx.query.assessments.findFirst({
+        where: {
+          userId: user.id
+        }
+      });
+      if (!assessment)
+        throw new InternalServerErrorException(`Assessment entry not available.`);
+
+      const questionKeys = new Set(session.listings
+        .flatMap((a) => a.additionalQuestions));
+
+      const questions = session.status == "PENDING" && questionKeys.size > 0
+        ? await tx.query.assessmentQuestions.findMany({
+          where: {
+            key: {
+              in: [...questionKeys]
+            }
+          },
+          with: {
+            assessmentAnswers: {
+              where: {
+                assessmentId: assessment.id
+              }
+            }
+          }
+        })
+        : [];
+
+      return {
+        ...sess,
+        questions
+      }
+    }
+    
     return {
       ...sess,
-      questions
+      questions: []
     }
   }
 
