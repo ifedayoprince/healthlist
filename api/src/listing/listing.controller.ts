@@ -15,7 +15,7 @@ export class ListingController {
   //   return this.listingService.create(createListingDto);
   // }
 
-  @Get()
+  @Get('search')
   @AllowMCPAccess()
   @HttpCode(200)
   search(@Query() queries: z.infer<typeof searchQueries>) {

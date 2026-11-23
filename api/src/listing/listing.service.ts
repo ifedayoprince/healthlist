@@ -5,6 +5,7 @@ import { Listing, ListingDocument } from '../common/db/schema.js';
 import { listingDocumentJson } from '../common/db/fragments/listing-document.js';
 import { createCursor, decodeCursor } from '../common/cursor.js';
 import z from 'zod';
+import { create } from 'domain';
 
 export const searchQueries = z.object({
   search: z.string(),
@@ -50,28 +51,33 @@ LIMIT 10;
   async findAll(limit: number, cursorToken?: string) {
     const cursor = decodeCursor(cursorToken);
 
-    const { rows: listings } = await db
-      .execute<
-        Listing & { document: ListingDocument | null }
-      >(sql`
-SELECT 
-  l.*,
-  ${listingDocumentJson()} AS document
-FROM listings as l
-LEFT JOIN listing_documents AS ld
-  ON ld.listing_id = l.id
-  AND ld.is_active = true
-${!cursor ? sql``
-          : sql`WHERE (l.created_at, l.id) > (
-  ${cursor?.timestamp}::timestamptz,
-  ${cursor?.id}::uuid
-)
-`}
-ORDER BY 
-  l.created_at ASC,
-  l.id ASC
-LIMIT ${limit + 1};
-      `)
+    const listings = await db.query.listings.findMany({
+      where: {
+        ...(cursor 
+          ? {
+            id: {
+              gt: cursor.id
+            },
+            createdAt: {
+              gt: new Date(cursor.timestamp)
+            }
+          }
+          : {}
+        )
+      },
+      with: {
+        documents: {
+          where: {
+            isActive: true
+          }
+        }
+      },
+      orderBy: {
+        id: 'asc',
+        createdAt: 'asc'
+      },
+      limit: limit + 1
+    })
 
     const hasMore = listings.length > limit;
     const data = listings.slice(0, limit);

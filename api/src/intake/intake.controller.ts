@@ -9,6 +9,14 @@ import { SubmitIntakeSessionDto } from './dto/submit-intake.dto.js';
 export class IntakeController {
   constructor(private readonly intakeService: IntakeService) { }
 
+  @Get()
+  @HttpCode(200)
+  async getIntakes(
+    @CurrentUser() user: AuthUser
+  ) {
+    return await this.intakeService.getIntakes(user);
+  }
+
   @Post()
   @AllowMCPAccess()
   @HttpCode(200)
@@ -30,6 +38,6 @@ export class IntakeController {
     @CurrentUser() user: AuthUser,
     @Body() dto: SubmitIntakeSessionDto
   ) {
-    return await this.intakeService.submitListing(user, dto);
+    return await this.intakeService.submitIntakeSession(user, dto);
   }
 }

@@ -83,6 +83,7 @@ export class AuthGuard implements CanActivate {
             response.cookie('sid', newSessionToken.token, {
                 httpOnly: true,
                 sameSite: 'lax',
+                path: '/',
                 expires: newSessionToken.expiresAt,
                 maxAge: newSessionToken.expiresAt.getTime() - Date.now()
             });

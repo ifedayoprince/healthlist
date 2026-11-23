@@ -9,9 +9,63 @@ import { AuthUser } from '../common/decorators/current-user.decorator.js';
 import logger from '../common/logger.js';
 import { SubmitIntakeSessionDto } from './dto/submit-intake.dto.js';
 import { formatAnswer } from '../common/questions.js';
+import { createCursor, Cursor, decodeCursor } from '../common/cursor.js';
 
 @Injectable()
 export class IntakeService {
+
+  async getIntakes(user: AuthUser, limit = 10, cursorToken?: string) {
+    const cursor = decodeCursor(cursorToken);
+
+    const intakes = await db.query.intakes.findMany({
+      where: {
+        userId: user.id,
+        ...(cursor
+          ? {
+            createdAt: {
+              gt: new Date(cursor.timestamp)
+            },
+            id: {
+              gt: cursor.id
+            }
+          }
+          : {}),
+        status: {
+          notIn: ["PENDING"]
+        }
+      },
+      with: {
+        listings: {
+          with: {
+            documents: {
+              where: {
+                isActive: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        id: 'asc',
+        createdAt: 'asc'
+      },
+      limit: limit + 1
+    });
+
+    const hasMore = intakes.length > limit;
+    const data = intakes.slice(0, limit);
+
+    return {
+      data,
+      cursor: hasMore
+        ? createCursor({
+          id: intakes.at(-1)!.id,
+          timestamp: intakes.at(-1)!.createdAt.toISOString()
+        })
+        : null
+    }
+  }
+
   async create(
     dto: CreateIntakeSessionDto
   ) {

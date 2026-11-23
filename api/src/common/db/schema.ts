@@ -131,7 +131,7 @@ export const intakes = pgTable("intakes", {
     .default('PENDING')
     .notNull(),
     doctorRemark: text('doctor_remark'),
-    createdAt: timestamp('created_at').defaultNow(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
     submittedAt: timestamp('submitted_at'),
 });
 export type Intake = typeof intakes.$inferSelect;

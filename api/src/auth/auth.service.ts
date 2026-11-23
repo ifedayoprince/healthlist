@@ -110,6 +110,7 @@ WHERE
         res.cookie('sid', token, {
             httpOnly: true,
             sameSite: "lax",
+            path: '/',
             expires: expiresAt,
             maxAge: expiresAt.getTime() - Date.now()
         });
