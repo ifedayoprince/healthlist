@@ -20,6 +20,12 @@ importers:
       axios:
         specifier: ^1.21.1
         version: 1.21.1
+      dotenv:
+        specifier: ^18.0.10
+        version: 18.0.10
+      envsafe:
+        specifier: ^2.0.3
+        version: 2.0.3
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -785,6 +791,11 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
+  dotenv@18.0.10:
+    resolution: {integrity: sha512-89FAA1xchzK2mxVWdr5F/0rldwiueXs6zJM86rO66EzekR1iBdiXRthyG+m5GvkJaFH3C2LESzamTkgndmLT2A==}
+    engines: {node: '>=12'}
+    hasBin: true
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -802,6 +813,10 @@ packages:
   environment@1.1.0:
     resolution: {integrity: sha512-xUtoPkMggbz0MPyPiIWr1Kp4aeWJjDZ6SMvURhimjdZgsRuDplF5/s9hcgGhyXMhs+6vpnuoiZ2kFiu3FMnS8Q==}
     engines: {node: '>=18'}
+
+  envsafe@2.0.3:
+    resolution: {integrity: sha512-51lek8h5btjXhXUDW//Pno7HPydM1WQzltOb1/ONRKdwB2QkfAURnN4Qn0cJ5LzGvX2Km1ReR2O3K3Bqq9sBMg==}
+    engines: {node: '>=10'}
 
   es-define-property@1.0.1:
     resolution: {integrity: sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g==}
@@ -2068,6 +2083,8 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
+  dotenv@18.0.10: {}
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -2081,6 +2098,8 @@ snapshots:
   encodeurl@2.0.3: {}
 
   environment@1.1.0: {}
+
+  envsafe@2.0.3: {}
 
   es-define-property@1.0.1: {}
 

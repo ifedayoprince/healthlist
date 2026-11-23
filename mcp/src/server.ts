@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import PackageJSON from '../package.json';
 import { createMcpExpressApp } from "@modelcontextprotocol/express";
