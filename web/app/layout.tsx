@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { DM_Sans, Playfair_Display } from "next/font/google";
+import { AuthProvider } from "@/lib/auth";
 import { StoreProvider } from "@/lib/store";
 import "./globals.css";
 
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${dmSans.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <StoreProvider>{children}</StoreProvider>
+        <AuthProvider>
+          <StoreProvider>{children}</StoreProvider>
+        </AuthProvider>
       </body>
     </html>
   );

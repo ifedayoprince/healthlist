@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { McpConnectModal } from "@/components/mcp-connect-modal";
 import { RequireAuth } from "@/components/require-auth";
 import { SiteHeader } from "@/components/site-header";
@@ -11,7 +11,6 @@ import {
   Field,
   Input,
   Modal,
-  ProductThumb,
   StatusBadge,
 } from "@/components/ui";
 import {
@@ -20,9 +19,18 @@ import {
   PlusIcon,
   SparkleIcon,
 } from "@/components/icons";
-import { displayStatus, intakeListings } from "@/lib/intake";
+import { ApiError, errorMessage } from "@/lib/api/client";
+import {
+  intakeHint,
+  intakeStatusMeta,
+  intakeSubtitle,
+  intakeTitle,
+  listIntakes,
+} from "@/lib/api/intake";
+import type { IntakeListEntry } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth";
 import { useApp } from "@/lib/store";
-import type { IntakeRequest, PaymentMethod } from "@/lib/types";
+import type { PaymentMethod } from "@/lib/types";
 import { cn, detectCardBrand, firstName, formatDate } from "@/lib/utils";
 
 type Tab = "intakes" | "payments";
@@ -36,33 +44,77 @@ export default function DashboardPage() {
 }
 
 function Dashboard() {
+  const { user, signOut } = useAuth();
   const {
-    sessionUser,
-    intakesFor,
     paymentsFor,
+    addPaymentMethod,
     removePaymentMethod,
     setDefaultPayment,
-    signOut,
+    resetDemo,
   } = useApp();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("intakes");
   const [mcpOpen, setMcpOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [intakes, setIntakes] = useState<IntakeListEntry[]>([]);
+  const [intakeState, setIntakeState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+  const [intakeError, setIntakeError] = useState("");
 
-  if (!sessionUser) return null;
+  const loadIntakes = useCallback(async () => {
+    try {
+      const data = await listIntakes();
+      setIntakes(data);
+      setIntakeState("ready");
+      setIntakeError("");
+    } catch (cause) {
+      if (cause instanceof ApiError && cause.status === 404) {
+        setIntakes([]);
+        setIntakeState("ready");
+        setIntakeError("");
+        return;
+      }
+      setIntakeError(errorMessage(cause));
+      setIntakeState("error");
+    }
+  }, []);
 
-  const intakes = intakesFor(sessionUser.id);
-  const payments = paymentsFor(sessionUser.id);
+  useEffect(() => {
+    // Loading from the API is an external-system sync on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadIntakes();
+
+    const onIntakesUpdated = () => {
+      void loadIntakes();
+    };
+    window.addEventListener("healthlist:intakes-updated", onIntakesUpdated);
+    return () => {
+      window.removeEventListener(
+        "healthlist:intakes-updated",
+        onIntakesUpdated,
+      );
+    };
+  }, [loadIntakes]);
+
+  if (!user) return null;
+
+  const payments = paymentsFor(user.id);
+
+  const retry = () => {
+    setIntakeState("loading");
+    void loadIntakes();
+  };
 
   return (
     <div className="min-h-svh bg-white">
       <SiteHeader
-        user={sessionUser}
+        user={user}
         onConnect={() => setMcpOpen(true)}
         onPayments={() => setTab("payments")}
+        showDoctorLink={user.role === "DOCTOR"}
         onSignOut={() => {
-          signOut();
-          router.replace("/");
+          void signOut().then(() => router.replace("/"));
         }}
       />
 
@@ -71,7 +123,7 @@ function Dashboard() {
           Your healthlist
         </p>
         <h1 className="mt-3 font-serif text-[42px] leading-[1.05] tracking-[-0.02em] sm:text-[56px]">
-          Welcome, {firstName(sessionUser.name)}.
+          Welcome, {firstName(user.name)}.
         </h1>
         <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-muted sm:text-[17px]">
           Your assistant finds products. You review the details and request a
@@ -95,7 +147,24 @@ function Dashboard() {
 
         {tab === "intakes" ? (
           <div className="mt-7">
-            {intakes.length === 0 ? (
+            {intakeState === "loading" ? (
+              <div className="space-y-3">
+                <div className="h-36 animate-pulse rounded-[22px] bg-[#f4f7f7]" />
+                <div className="h-36 animate-pulse rounded-[22px] bg-[#f4f7f7]" />
+              </div>
+            ) : intakeState === "error" ? (
+              <div className="rounded-[24px] border border-[#f0dada] bg-[#fdf8f8] px-6 py-10 text-center">
+                <h2 className="font-serif text-2xl">
+                  We couldn&apos;t load your requests
+                </h2>
+                <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+                  {intakeError}
+                </p>
+                <Button variant="outline" className="mt-5" onClick={retry}>
+                  Try again
+                </Button>
+              </div>
+            ) : intakes.length === 0 ? (
               <EmptyIntakes onConnect={() => setMcpOpen(true)} />
             ) : (
               <>
@@ -112,7 +181,7 @@ function Dashboard() {
 
                 <div className="mt-4 space-y-3">
                   {intakes.map((intake) => (
-                    <IntakeCard key={intake.id} intake={intake} />
+                    <IntakeCard key={intake.id || intake.key} intake={intake} />
                   ))}
                 </div>
 
@@ -168,10 +237,7 @@ function Dashboard() {
                   You&apos;re not charged when you request a review. A saved card
                   is only used once a doctor approves your order.
                 </p>
-                <Button
-                  className="mt-6"
-                  onClick={() => setPaymentOpen(true)}
-                >
+                <Button className="mt-6" onClick={() => setPaymentOpen(true)}>
                   <PlusIcon className="size-4" />
                   Add payment method
                 </Button>
@@ -197,10 +263,14 @@ function Dashboard() {
         )}
 
         <div className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 text-xs text-muted">
-          <Link href="/doctor" className="transition hover:text-brand">
-            Doctor console →
-          </Link>
-          <ResetDemo />
+          {user.role === "DOCTOR" ? (
+            <Link href="/doctor" className="transition hover:text-brand">
+              Doctor console →
+            </Link>
+          ) : (
+            <span />
+          )}
+          <ResetDemo onReset={resetDemo} />
         </div>
       </main>
 
@@ -208,6 +278,7 @@ function Dashboard() {
       <AddPaymentModal
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
+        onSave={(input) => addPaymentMethod(input, user.id)}
       />
     </div>
   );
@@ -248,41 +319,34 @@ function TabButton({
   );
 }
 
-function IntakeCard({ intake }: { intake: IntakeRequest }) {
-  const listings = intakeListings(intake);
-  const status = displayStatus(intake);
-  const actionable = intake.status === "pending" && !intake.submittedAt;
-
-  const hint =
-    actionable
-      ? "Action needed — review and submit"
-      : intake.status === "pending"
-        ? "Submitted — waiting for a doctor"
-        : intake.status === "approved"
-          ? "Approved — your order is moving ahead"
-          : intake.status === "declined"
-            ? "Not approved — open to see the doctor's note"
-            : "Cancelled";
+function IntakeCard({ intake }: { intake: IntakeListEntry }) {
+  const status = intakeStatusMeta(intake.status);
+  const hint = intakeHint(intake.status);
+  const title = intakeTitle(intake);
+  const subtitle = intakeSubtitle(intake);
+  const images = (intake.listings ?? [])
+    .map((listing) => listing.productImage)
+    .filter((image): image is string => Boolean(image))
+    .slice(0, 2);
 
   return (
     <Link
-      href={`/intake/${intake.id}`}
+      href={`/i/${encodeURIComponent(intake.key)}`}
       className="group block rounded-[22px] border border-line bg-white p-5 transition hover:border-brand/30 hover:bg-[#fcfefe] sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
-              {intake.id}
+              {intake.key}
             </span>
             <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
           </div>
           <h3 className="mt-3 truncate font-serif text-[25px] leading-tight sm:text-[28px]">
-            {listings.map((listing) => listing.name).join(", ") ||
-              "No products selected"}
+            {title}
           </h3>
           <p className="mt-1.5 text-sm text-muted">
-            Created {formatDate(intake.createdAt)}
+            {subtitle} · Created {formatDate(intake.createdAt ?? undefined)}
             {intake.submittedAt
               ? ` · Submitted ${formatDate(intake.submittedAt)}`
               : ""}
@@ -290,13 +354,21 @@ function IntakeCard({ intake }: { intake: IntakeRequest }) {
         </div>
 
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
-          {listings.slice(0, 2).map((listing) => (
-            <ProductThumb
-              key={listing.id}
-              listing={listing}
-              className="size-14 rounded-[10px]"
+          {images.map((image) => (
+            <div
+              key={image}
+              className="size-14 rounded-[10px] bg-mint bg-cover bg-center"
+              style={{ backgroundImage: `url(${image})` }}
             />
           ))}
+          {images.length === 0 ? (
+            <>
+              <div className="size-14 rounded-[10px] bg-mint" />
+              {title.includes(",") ? (
+                <div className="size-14 rounded-[10px] bg-mint" />
+              ) : null}
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -389,11 +461,16 @@ function PaymentCard({
 function AddPaymentModal({
   open,
   onClose,
+  onSave,
 }: {
   open: boolean;
   onClose: () => void;
+  onSave: (input: {
+    last4: string;
+    expiry: string;
+    brand: string;
+  }) => void;
 }) {
-  const { addPaymentMethod } = useApp();
   const [cardholder, setCardholder] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
@@ -422,7 +499,7 @@ function AddPaymentModal({
       return;
     }
 
-    addPaymentMethod({
+    onSave({
       last4: digits.slice(-4),
       expiry,
       brand: detectCardBrand(digits),
@@ -529,9 +606,7 @@ function AddPaymentModal({
   );
 }
 
-function ResetDemo() {
-  const { resetDemo } = useApp();
-  const router = useRouter();
+function ResetDemo({ onReset }: { onReset: () => void }) {
   const [confirming, setConfirming] = useState(false);
 
   return (
@@ -542,8 +617,7 @@ function ResetDemo() {
           setConfirming(true);
           return;
         }
-        resetDemo();
-        router.replace("/");
+        onReset();
       }}
       onBlur={() => setConfirming(false)}
       className={cn(
@@ -551,7 +625,9 @@ function ResetDemo() {
         confirming && "font-medium text-[#c25d5d]",
       )}
     >
-      {confirming ? "Click again to reset the demo" : "Reset demo data"}
+      {confirming
+        ? "Click again to reset demo payments"
+        : "Reset demo payments"}
     </button>
   );
 }

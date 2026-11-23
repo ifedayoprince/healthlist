@@ -21,6 +21,11 @@ import type {
 } from "./types";
 import { deriveNameFromEmail, uid } from "./utils";
 
+/**
+ * Mock-only browser state. Auth, assessments, intakes, and the doctor console
+ * are backed by the real API; this store is retained for mocked payment
+ * methods.
+ */
 const STORAGE_KEY = "healthlist.mock.v1";
 
 type SignInResult = {
@@ -50,11 +55,14 @@ type StoreContextValue = {
   ) => void;
   cancelIntake: (intakeId: string) => void;
   decideIntake: (intakeId: string, decision: "approved" | "declined") => void;
-  addPaymentMethod: (input: {
-    last4: string;
-    expiry: string;
-    brand: string;
-  }) => void;
+  addPaymentMethod: (
+    input: {
+      last4: string;
+      expiry: string;
+      brand: string;
+    },
+    userId: string,
+  ) => void;
   removePaymentMethod: (paymentMethodId: string) => void;
   setDefaultPayment: (paymentMethodId: string) => void;
   resetDemo: () => void;
@@ -276,9 +284,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const addPaymentMethod = useCallback(
-    (input: { last4: string; expiry: string; brand: string }) => {
+    (
+      input: { last4: string; expiry: string; brand: string },
+      userId: string,
+    ) => {
       setState((current) => {
-        const userId = current.sessionUserId;
         if (!userId) return current;
 
         const existing = current.paymentMethods.filter(

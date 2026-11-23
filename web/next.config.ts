@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+const apiInternalUrl = (
+  process.env.API_INTERNAL_URL ?? "http://localhost:3001"
+).replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
@@ -14,6 +18,14 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiInternalUrl}/:path*`,
+      },
+    ];
   },
 };
 

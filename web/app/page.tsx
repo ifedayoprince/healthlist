@@ -5,21 +5,23 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { McpConnectModal } from "@/components/mcp-connect-modal";
 import { AuthShell, Button, PageLoader } from "@/components/ui";
-import { useApp } from "@/lib/store";
+import { useAuth } from "@/lib/auth";
 
 export default function Home() {
-  const { ready, sessionUser, assessmentFor } = useApp();
+  const { ready, user, pendingAssessment } = useAuth();
   const router = useRouter();
   const [mcpOpen, setMcpOpen] = useState(false);
 
   useEffect(() => {
-    if (!ready || !sessionUser) return;
-    router.replace(
-      assessmentFor(sessionUser.id) ? "/dashboard" : "/assessment",
-    );
-  }, [ready, sessionUser, assessmentFor, router]);
+    if (!ready || !user) return;
+    if (user.role === "DOCTOR") {
+      router.replace("/doctor");
+      return;
+    }
+    router.replace(pendingAssessment ? "/assessment" : "/dashboard");
+  }, [ready, user, pendingAssessment, router]);
 
-  if (ready && sessionUser) return <PageLoader />;
+  if (ready && user) return <PageLoader />;
 
   return (
     <>

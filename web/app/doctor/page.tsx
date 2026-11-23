@@ -1,82 +1,217 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { DocIcon } from "@/components/icons";
+import { RequireAuth } from "@/components/require-auth";
 import {
   BrandLockup,
   Button,
   Modal,
-  PageLoader,
   StatusBadge,
+  Textarea,
 } from "@/components/ui";
-import { displayStatus, intakeListings } from "@/lib/intake";
-import { useApp } from "@/lib/store";
-import type { IntakeRequest, User } from "@/lib/types";
+import { ApiError, errorMessage } from "@/lib/api/client";
+import {
+  doctorIntakeTitle,
+  doctorListingName,
+  doctorPatientLabel,
+  doctorPatientMeta,
+  formatDoctorAnswer,
+  getDoctorAssessment,
+  listDoctorIntakes,
+  submitDoctorReview,
+} from "@/lib/api/doctor";
+import type { DoctorAssessment, DoctorIntake } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth";
+import { rememberRedirect } from "@/lib/redirect";
 import { cn, formatDate } from "@/lib/utils";
 
-type Filter = "all" | "pending" | "approved" | "declined";
-
 export default function DoctorPage() {
-  const {
-    ready,
-    intakes,
-    userById,
-    assessmentFor,
-    decideIntake,
-    resetDemo,
-  } = useApp();
-  const [filter, setFilter] = useState<Filter>("all");
-  const [assessmentUser, setAssessmentUser] = useState<User | null>(null);
-  const [resetArmed, setResetArmed] = useState(false);
+  return (
+    <RequireAuth>
+      <DoctorConsole />
+    </RequireAuth>
+  );
+}
 
-  if (!ready) return <PageLoader />;
+function DoctorConsole() {
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+  const [state, setState] = useState<
+    "loading" | "ready" | "error" | "forbidden"
+  >("loading");
+  const [intakes, setIntakes] = useState<DoctorIntake[]>([]);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
-  const pending = intakes.filter((intake) => intake.status === "pending");
-  const approved = intakes.filter((intake) => intake.status === "approved");
-  const declined = intakes.filter((intake) => intake.status === "declined");
+  const [assessmentIntake, setAssessmentIntake] =
+    useState<DoctorIntake | null>(null);
+  const [assessment, setAssessment] = useState<DoctorAssessment>(null);
+  const [assessmentState, setAssessmentState] = useState<
+    "idle" | "loading" | "ready" | "error"
+  >("idle");
+  const [assessmentError, setAssessmentError] = useState("");
 
-  const sorted = [...intakes].sort((a, b) => {
-    const rank = (intake: IntakeRequest) =>
-      intake.status === "pending" ? 0 : 1;
-    const rankDifference = rank(a) - rank(b);
-    if (rankDifference !== 0) return rankDifference;
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const [decision, setDecision] = useState<{
+    intake: DoctorIntake;
+    isApproved: boolean;
+  } | null>(null);
+  const [remark, setRemark] = useState("");
+  const [reviewing, setReviewing] = useState(false);
+  const [reviewError, setReviewError] = useState("");
 
-  const filtered =
-    filter === "all"
-      ? sorted
-      : sorted.filter((intake) => intake.status === filter);
+  const load = useCallback(async () => {
+    try {
+      const data = await listDoctorIntakes();
+      setIntakes(data);
+      setError("");
+      setState("ready");
+    } catch (cause) {
+      if (
+        cause instanceof ApiError &&
+        (cause.status === 401 || cause.status === 403)
+      ) {
+        setState("forbidden");
+        return;
+      }
+      setError(errorMessage(cause));
+      setState("error");
+    }
+  }, []);
 
-  const assessment = assessmentUser
-    ? assessmentFor(assessmentUser.id)
-    : undefined;
+  const isDenied = user?.role === "PATIENT";
+
+  useEffect(() => {
+    if (isDenied) return;
+    // Loading from the API is an external-system sync on mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [isDenied, load]);
+
+  const openAssessment = async (intake: DoctorIntake) => {
+    setAssessmentIntake(intake);
+    setAssessment(null);
+    setAssessmentError("");
+    setAssessmentState("loading");
+
+    if (!intake.userId) {
+      setAssessmentState("error");
+      setAssessmentError("This intake has no patient attached.");
+      return;
+    }
+
+    try {
+      const data = await getDoctorAssessment(intake.userId);
+      setAssessment(data);
+      setAssessmentState("ready");
+    } catch (cause) {
+      setAssessmentError(errorMessage(cause));
+      setAssessmentState("error");
+    }
+  };
+
+  const openDecision = (intake: DoctorIntake, isApproved: boolean) => {
+    setDecision({ intake, isApproved });
+    setRemark("");
+    setReviewError("");
+  };
+
+  const confirmDecision = async () => {
+    if (!decision) return;
+    setReviewing(true);
+    setReviewError("");
+
+    try {
+      await submitDoctorReview(decision.intake.id, {
+        isApproved: decision.isApproved,
+        remark: remark.trim() || undefined,
+      });
+      setIntakes((current) =>
+        current.filter((item) => item.id !== decision.intake.id),
+      );
+      setNotice(
+        decision.isApproved
+          ? "Request approved. The patient can now see the decision."
+          : "Request declined. The patient can now see the decision.",
+      );
+      setDecision(null);
+      setRemark("");
+    } catch (cause) {
+      setReviewError(errorMessage(cause));
+    } finally {
+      setReviewing(false);
+    }
+  };
+
+  if (!user) return null;
+
+  const header = (
+    <header className="sticky top-0 z-40 px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[108px] bg-gradient-to-b from-white via-white/90 to-transparent"
+      />
+      <div className="relative mx-auto flex w-full max-w-5xl items-center justify-between gap-3 rounded-[22px] border border-[#e3e9ea] bg-white/90 px-2.5 py-2 shadow-[0_18px_45px_-26px_rgba(13,60,66,0.45)] backdrop-blur-xl sm:rounded-full sm:pl-4">
+        <BrandLockup href="/doctor" />
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden items-center rounded-full bg-[#fff7e8] px-3 py-1.5 text-[11px] font-medium text-[#9d7c3b] sm:inline-flex">
+            Clinician access
+          </span>
+          <span className="hidden items-center gap-1.5 rounded-full bg-[#f4f8f8] px-3 py-1.5 text-[11px] text-muted md:inline-flex">
+            <span className="size-1.5 rounded-full bg-brand" />
+            {user.name}
+          </span>
+          <Link
+            href="/dashboard"
+            className="rounded-full border border-line bg-white px-3.5 py-2 text-[13px] font-medium transition hover:bg-[#f8fafb]"
+          >
+            Dashboard
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+
+  if (isDenied || state === "forbidden") {
+    return (
+      <div className="min-h-svh bg-white">
+        {header}
+        <main className="mx-auto flex w-full max-w-5xl flex-col items-center px-5 pb-24 pt-20 text-center sm:px-6">
+          <div className="grid size-16 place-items-center rounded-full bg-[#fff7e8] text-[#9d7c3b]">
+            <DocIcon className="size-7" />
+          </div>
+          <h1 className="mt-6 font-serif text-[40px] leading-tight sm:text-5xl">
+            Doctor access required
+          </h1>
+          <p className="mt-4 max-w-md text-[16px] leading-relaxed text-muted">
+            This console is available to Healthlist clinicians. You&apos;re
+            currently signed in as {user.email}.
+          </p>
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <Button variant="outline" onClick={() => router.push("/dashboard")}>
+              Back to dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                rememberRedirect("/doctor");
+                void signOut().then(() => router.replace("/login"));
+              }}
+            >
+              Switch account
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-svh bg-white">
-      <header className="sticky top-0 z-40 px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[108px] bg-gradient-to-b from-white via-white/90 to-transparent"
-        />
-        <div className="relative mx-auto flex w-full max-w-5xl items-center justify-between gap-3 rounded-[22px] border border-[#e3e9ea] bg-white/90 px-2.5 py-2 shadow-[0_18px_45px_-26px_rgba(13,60,66,0.45)] backdrop-blur-xl sm:rounded-full sm:pl-4">
-          <BrandLockup href="/" />
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="hidden items-center rounded-full bg-[#fff7e8] px-3 py-1.5 text-[11px] font-medium text-[#9d7c3b] sm:inline-flex">
-              Clinician access
-            </span>
-            <Link
-              href="/"
-              className="rounded-full border border-line bg-white px-3.5 py-2 text-[13px] font-medium transition hover:bg-[#f8fafb]"
-            >
-              Back to site
-            </Link>
-          </div>
-        </div>
-      </header>
+      {header}
 
-      <main className="mx-auto w-full max-w-5xl px-5 pb-24 pt-10 sm:px-6 sm:pt-14">
+      <main className="mx-auto w-full max-w-5xl px-5 pb-24 pt-8 sm:px-6 sm:pt-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand">
           Healthlist clinicians
         </p>
@@ -88,93 +223,95 @@ export default function DoctorPage() {
           completed, then approve or decline the request.
         </p>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <Stat label="Pending" value={pending.length} />
-          <Stat label="Approved" value={approved.length} />
-          <Stat label="Declined" value={declined.length} />
-        </div>
+        {notice ? (
+          <div className="mt-6 flex items-center justify-between gap-4 rounded-[16px] bg-[#eef9f2] px-4 py-3 text-sm text-[#2f7d52]">
+            <p>{notice}</p>
+            <button
+              type="button"
+              onClick={() => setNotice("")}
+              className="text-xs font-medium underline underline-offset-4"
+            >
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
-        <div className="mt-8 flex flex-wrap gap-2">
-          <FilterButton
-            active={filter === "all"}
-            onClick={() => setFilter("all")}
-            label="All"
-            count={intakes.length}
-          />
-          <FilterButton
-            active={filter === "pending"}
-            onClick={() => setFilter("pending")}
-            label="Pending"
-            count={pending.length}
-          />
-          <FilterButton
-            active={filter === "approved"}
-            onClick={() => setFilter("approved")}
-            label="Approved"
-            count={approved.length}
-          />
-          <FilterButton
-            active={filter === "declined"}
-            onClick={() => setFilter("declined")}
-            label="Declined"
-            count={declined.length}
-          />
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+          <div className="flex items-baseline gap-2">
+            <span className="font-serif text-[34px] leading-none">
+              {state === "ready" ? intakes.length : "—"}
+            </span>
+            <span className="text-sm text-muted">
+              {intakes.length === 1
+                ? "request awaiting review"
+                : "requests awaiting review"}
+            </span>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#f4f8f8] px-3 py-1.5 text-[11px] text-muted">
+            <span className="size-1.5 rounded-full bg-brand" />
+            Live queue
+          </span>
         </div>
 
         <div className="mt-5 space-y-4">
-          {filtered.length === 0 ? (
-            <div className="rounded-[22px] border border-dashed border-[#d7dbdd] bg-[#fbfcfc] px-6 py-12 text-center text-muted">
-              No requests in this view.
+          {state === "loading" ? (
+            <>
+              <div className="h-48 animate-pulse rounded-[22px] bg-[#f4f7f7]" />
+              <div className="h-48 animate-pulse rounded-[22px] bg-[#f4f7f7]" />
+            </>
+          ) : state === "error" ? (
+            <div className="rounded-[22px] border border-[#f0dada] bg-[#fdf8f8] px-6 py-10 text-center">
+              <h2 className="font-serif text-2xl">
+                We couldn&apos;t load the review queue
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+                {error}
+              </p>
+              <Button
+                variant="outline"
+                className="mt-5"
+                onClick={() => {
+                  setState("loading");
+                  void load();
+                }}
+              >
+                Try again
+              </Button>
+            </div>
+          ) : intakes.length === 0 ? (
+            <div className="rounded-[22px] border border-dashed border-[#d7dbdd] bg-[#fbfcfc] px-6 py-14 text-center">
+              <div className="mx-auto grid size-14 place-items-center rounded-full bg-mint-soft text-brand">
+                <DocIcon className="size-6" />
+              </div>
+              <h2 className="mt-5 font-serif text-[28px] leading-tight">
+                The queue is clear
+              </h2>
+              <p className="mx-auto mt-2 max-w-md text-[15px] leading-relaxed text-muted">
+                Requests appear here after a patient submits them for review.
+              </p>
             </div>
           ) : (
-            filtered.map((intake) => {
-              const user = userById(intake.userId);
-              return (
-                <DoctorCase
-                  key={intake.id}
-                  intake={intake}
-                  user={user}
-                  onAssessment={() => user && setAssessmentUser(user)}
-                  onDecide={decideIntake}
-                />
-              );
-            })
+            intakes.map((intake) => (
+              <DoctorCase
+                key={intake.id}
+                intake={intake}
+                onAssessment={() => void openAssessment(intake)}
+                onDecision={(isApproved) =>
+                  openDecision(intake, isApproved)
+                }
+              />
+            ))
           )}
         </div>
-
-        <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-xs text-muted">
-          <p>
-            Prototype console — decisions update the patient&apos;s dashboard in
-            this browser.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (!resetArmed) {
-                setResetArmed(true);
-                return;
-              }
-              resetDemo();
-              setResetArmed(false);
-            }}
-            onBlur={() => setResetArmed(false)}
-            className={cn(
-              "transition hover:text-brand",
-              resetArmed && "font-medium text-[#c25d5d]",
-            )}
-          >
-            {resetArmed ? "Click again to reset the demo" : "Reset demo data"}
-          </button>
-        </footer>
       </main>
 
       <Modal
-        open={Boolean(assessmentUser)}
-        onClose={() => setAssessmentUser(null)}
+        open={Boolean(assessmentIntake)}
+        onClose={() => setAssessmentIntake(null)}
         labelledBy="assessment-modal-title"
-        className="sm:max-w-[620px]"
+        className="sm:max-w-[640px]"
       >
-        {assessmentUser ? (
+        {assessmentIntake ? (
           <>
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -185,91 +322,144 @@ export default function DoctorPage() {
                   id="assessment-modal-title"
                   className="mt-2 font-serif text-[32px] leading-tight"
                 >
-                  {assessmentUser.name}
+                  {doctorPatientLabel(assessmentIntake)}
                 </h2>
                 <p className="mt-1 text-sm text-muted">
-                  {assessmentUser.email}
+                  {doctorPatientMeta(assessmentIntake)}
                 </p>
               </div>
               <button
                 type="button"
-                onClick={() => setAssessmentUser(null)}
+                onClick={() => setAssessmentIntake(null)}
                 className="rounded-full px-3 py-1.5 text-sm text-muted transition hover:bg-[#f2f4f5] hover:text-foreground"
               >
                 Close
               </button>
             </div>
 
-            {assessment ? (
-              <div className="mt-6 space-y-5">
-                <Section title="About">
-                  <Row label="Full name" value={assessment.fullName} />
-                  <Row label="Biological sex" value={assessment.sex} />
-                  <Row
-                    label="Height / weight"
-                    value={[
-                      assessment.heightCm ? `${assessment.heightCm} cm` : "",
-                      assessment.weightKg ? `${assessment.weightKg} kg` : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  />
-                </Section>
-
-                <Section title="Medical basics">
-                  <Row label="Date of birth" value={assessment.dateOfBirth} />
-                  <Row label="Blood group" value={assessment.bloodGroup} />
-                </Section>
-
-                <Section title="Diagnosed conditions">
-                  {assessment.conditions.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {assessment.conditions.map((condition) => (
-                        <span
-                          key={condition}
-                          className="rounded-full bg-mint-soft px-3 py-1 text-xs font-medium text-brand"
-                        >
-                          {condition}
-                        </span>
-                      ))}
-                      {assessment.otherCondition ? (
-                        <span className="rounded-full bg-[#f4f6f7] px-3 py-1 text-xs text-muted">
-                          {assessment.otherCondition}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted">None reported</p>
-                  )}
-                </Section>
-
-                <Section title="Medications & allergies">
-                  <Row label="Medications" value={assessment.medications} />
-                  <Row label="Allergies" value={assessment.allergies} />
-                </Section>
-
-                <Section title="Lifestyle">
-                  <Row label="Smoking / vaping" value={assessment.smoking} />
-                  <Row label="Alcohol" value={assessment.alcohol} />
-                  <Row label="Pregnancy" value={assessment.pregnancy} />
-                </Section>
-
-                <p className="border-t border-line pt-4 text-xs text-muted">
-                  Completed {formatDate(assessment.completedAt)}
-                </p>
+            {assessmentState === "loading" ? (
+              <div className="flex justify-center py-10">
+                <div className="size-6 animate-spin rounded-full border-2 border-brand/15 border-t-brand" />
               </div>
-            ) : (
+            ) : assessmentState === "error" ? (
+              <p className="mt-6 text-sm text-[#c25d5d]">
+                {assessmentError}
+              </p>
+            ) : !assessment ? (
               <p className="mt-6 text-sm text-muted">
                 This patient hasn&apos;t completed an assessment yet.
               </p>
+            ) : assessment.assessmentAnswers.length === 0 ? (
+              <p className="mt-6 text-sm text-muted">
+                No assessment answers are on file.
+              </p>
+            ) : (
+              <div className="mt-5 divide-y divide-line">
+                {assessment.assessmentAnswers.map((answer, index) => (
+                  <div
+                    key={`${answer.assessmentQuestion.key}-${index}`}
+                    className="py-3.5"
+                  >
+                    <p className="text-[13px] leading-relaxed text-muted">
+                      {answer.assessmentQuestion.question}
+                    </p>
+                    <p className="mt-1.5 text-[15px] leading-relaxed">
+                      {formatDoctorAnswer(
+                        answer.answer,
+                        answer.assessmentQuestion,
+                      )}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
 
             <Button
               className="mt-6 w-full"
-              onClick={() => setAssessmentUser(null)}
+              onClick={() => setAssessmentIntake(null)}
             >
               Done
             </Button>
+          </>
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={Boolean(decision)}
+        onClose={() => {
+          if (!reviewing) setDecision(null);
+        }}
+        labelledBy="decision-modal-title"
+      >
+        {decision ? (
+          <>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">
+              {decision.isApproved ? "Approve request" : "Decline request"}
+            </p>
+            <h2
+              id="decision-modal-title"
+              className="mt-2 font-serif text-[32px] leading-tight"
+            >
+              {decision.isApproved
+                ? "Approve this intake?"
+                : "Decline this intake?"}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              {decision.isApproved
+                ? `The patient will be able to continue with ${doctorIntakeTitle(decision.intake)}.`
+                : "The patient will see the decision and any note you add below."}
+            </p>
+
+            <label
+              htmlFor="doctor-remark"
+              className="mt-6 mb-2 block text-sm text-foreground"
+            >
+              Note for the patient{" "}
+              <span className="text-muted">(optional)</span>
+            </label>
+            <Textarea
+              id="doctor-remark"
+              placeholder={
+                decision.isApproved
+                  ? "e.g. Standard dosing is fine with your current medication."
+                  : "e.g. Please speak with your GP before starting a GLP-1."
+              }
+              value={remark}
+              onChange={(event) => setRemark(event.target.value)}
+              disabled={reviewing}
+            />
+
+            {reviewError ? (
+              <p className="mt-3 text-sm text-[#c25d5d]" role="alert">
+                {reviewError}
+              </p>
+            ) : null}
+
+            <div className="mt-6 flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={reviewing}
+                onClick={() => setDecision(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className={cn(
+                  "flex-1",
+                  !decision.isApproved &&
+                    "bg-[#b85252] hover:bg-[#a84747]",
+                )}
+                disabled={reviewing}
+                onClick={() => void confirmDecision()}
+              >
+                {reviewing
+                  ? "Saving…"
+                  : decision.isApproved
+                    ? "Approve"
+                    : "Decline"}
+              </Button>
+            </div>
           </>
         ) : null}
       </Modal>
@@ -277,206 +467,69 @@ export default function DoctorPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-[18px] border border-line px-5 py-4">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-        {label}
-      </p>
-      <p className="mt-1 font-serif text-[32px] leading-none">{value}</p>
-    </div>
-  );
-}
-
-function FilterButton({
-  active,
-  onClick,
-  label,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  count: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-full border px-4 py-2 text-sm transition",
-        active
-          ? "border-brand bg-brand text-white"
-          : "border-line bg-white text-muted hover:text-foreground",
-      )}
-    >
-      {label}
-      <span
-        className={cn(
-          "ml-2 text-xs",
-          active ? "text-white/70" : "text-muted",
-        )}
-      >
-        {count}
-      </span>
-    </button>
-  );
-}
-
 function DoctorCase({
   intake,
-  user,
   onAssessment,
-  onDecide,
+  onDecision,
 }: {
-  intake: IntakeRequest;
-  user?: User;
+  intake: DoctorIntake;
   onAssessment: () => void;
-  onDecide: (intakeId: string, decision: "approved" | "declined") => void;
+  onDecision: (isApproved: boolean) => void;
 }) {
-  const { listingById } = useApp();
-  const listings = intakeListings(intake);
-  const status = displayStatus(intake);
-  const pending = intake.status === "pending";
-  const canDecide = pending && Boolean(intake.submittedAt);
-  const answers = Object.entries(intake.additionalAnswers ?? {});
-
   return (
     <div className="rounded-[22px] border border-line bg-white p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
-              {intake.id}
+              {intake.key}
             </span>
-            <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
-            {pending && !intake.submittedAt ? (
-              <StatusBadge tone="neutral">Not submitted</StatusBadge>
-            ) : null}
+            <StatusBadge tone="pending">In review</StatusBadge>
           </div>
           <h2 className="mt-3 font-serif text-[26px] leading-tight">
-            {user?.name ?? "Unknown patient"}
+            {doctorPatientLabel(intake)}
           </h2>
-          <p className="text-sm text-muted">{user?.email ?? "—"}</p>
+          <p className="text-sm text-muted">{doctorPatientMeta(intake)}</p>
         </div>
         <p className="text-sm text-muted">
           {intake.submittedAt
             ? `Submitted ${formatDate(intake.submittedAt)}`
-            : `Created ${formatDate(intake.createdAt)}`}
+            : `Created ${formatDate(intake.createdAt ?? undefined)}`}
         </p>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        {listings.map((listing) => (
+      <h3 className="mt-5 font-serif text-[21px] leading-tight">
+        {doctorIntakeTitle(intake)}
+      </h3>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {intake.listings.map((listing) => (
           <span
             key={listing.id}
             className="rounded-full bg-[#f4f6f7] px-3 py-1.5 text-sm text-[#3f4649]"
           >
-            {listing.name}
+            {doctorListingName(listing)}
             <span className="text-muted"> · {listing.brand}</span>
           </span>
         ))}
       </div>
 
-      {answers.length > 0 ? (
-        <details className="mt-3 rounded-[14px] bg-[#f7f9fa] px-4 py-3 text-sm">
-          <summary className="cursor-pointer text-muted">
-            Additional info provided ({answers.length})
-          </summary>
-          <ul className="mt-3 space-y-2">
-            {answers.map(([key, value]) => {
-              const [listingId, questionKey] = key.split(":");
-              const listing = listingById(listingId);
-              const question = listing?.additionalQuestions?.find(
-                (item) => item.key === questionKey,
-              );
-              return (
-                <li key={key}>
-                  <span className="text-muted">
-                    {question?.label ?? questionKey}:
-                  </span>{" "}
-                  {value}
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      ) : null}
-
-      {intake.doctorNote ? (
-        <p className="mt-3 rounded-[14px] bg-[#fbfaf7] px-4 py-3 text-sm leading-relaxed text-[#6f6a5f]">
-          <span className="font-medium">Note:</span> {intake.doctorNote}
-        </p>
-      ) : null}
-
       <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onAssessment}
-          disabled={!user}
-        >
+        <Button size="sm" variant="outline" onClick={onAssessment}>
           <DocIcon className="size-4" />
           View assessment
         </Button>
-
-        {pending ? (
-          <>
-            <Button
-              size="sm"
-              disabled={!canDecide}
-              onClick={() => onDecide(intake.id, "approved")}
-            >
-              Approve
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!canDecide}
-              onClick={() => onDecide(intake.id, "declined")}
-              className="border-[#efd0d0] text-[#b85252] hover:bg-[#fdf1f1]"
-            >
-              Decline
-            </Button>
-            {!canDecide ? (
-              <p className="text-xs text-muted">
-                Waiting for the patient to request review.
-              </p>
-            ) : null}
-          </>
-        ) : (
-          <p className="text-sm text-muted">
-            {intake.status === "approved" ? "Approved" : "Declined"}
-            {intake.reviewedAt ? ` ${formatDate(intake.reviewedAt)}` : ""}
-          </p>
-        )}
+        <Button size="sm" onClick={() => onDecision(true)}>
+          Approve
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onDecision(false)}
+          className="border-[#efd0d0] text-[#b85252] hover:bg-[#fdf1f1]"
+        >
+          Decline
+        </Button>
       </div>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="border-t border-line pt-4">
-      <h3 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
-        {title}
-      </h3>
-      <div className="mt-2.5 space-y-2 text-sm">{children}</div>
-    </section>
-  );
-}
-
-function Row({ label, value }: { label: string; value?: string }) {
-  return (
-    <div className="flex justify-between gap-4">
-      <span className="shrink-0 text-muted">{label}</span>
-      <span className="text-right">{value?.trim() || "—"}</span>
     </div>
   );
 }

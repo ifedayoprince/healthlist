@@ -1,43 +1,60 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   AuthShell,
   Button,
   Field,
   Input,
   PageLoader,
+  PasswordInput,
 } from "@/components/ui";
+import { errorMessage } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth";
 import { consumeRedirect } from "@/lib/redirect";
-import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/site";
-import { useApp } from "@/lib/store";
+
+type Mode = "signin" | "signup";
 
 export default function LoginPage() {
-  const { ready, sessionUser, signIn, assessmentFor } = useApp();
+  const { ready, user, pendingAssessment, signIn, signUp } = useAuth();
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>("signin");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const redirecting = useRef(false);
 
   useEffect(() => {
-    if (!ready || !sessionUser) return;
+    if (!ready || !user || redirecting.current) return;
 
-    if (!assessmentFor(sessionUser.id)) {
+    if (user.role === "DOCTOR") {
+      const next = consumeRedirect();
+      router.replace(next ?? "/doctor");
+      return;
+    }
+
+    if (pendingAssessment) {
       router.replace("/assessment");
       return;
     }
 
     const next = consumeRedirect();
     router.replace(next ?? "/dashboard");
-  }, [ready, sessionUser, assessmentFor, router]);
+  }, [ready, user, pendingAssessment, router]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
-    const trimmed = email.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    const trimmedEmail = email.trim();
+    if (mode === "signup" && !name.trim()) {
+      setError("Add your full name to create your account.");
+      return;
+    }
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       setError("Enter a valid email address to continue.");
       return;
     }
@@ -46,20 +63,71 @@ export default function LoginPage() {
       return;
     }
 
-    signIn(trimmed, password);
+    setSubmitting(true);
+    try {
+      const { response, user: sessionUser } =
+        mode === "signup"
+          ? await signUp({
+              name: name.trim(),
+              email: trimmedEmail,
+              password,
+            })
+          : await signIn({
+              email: trimmedEmail,
+              password,
+            });
+
+      redirecting.current = true;
+
+      if (sessionUser.role === "DOCTOR") {
+        const next = consumeRedirect();
+        router.replace(next ?? "/doctor");
+        return;
+      }
+
+      if (response.hasPendingAssessment) {
+        router.replace("/assessment");
+        return;
+      }
+
+      const next = consumeRedirect();
+      router.replace(next ?? "/dashboard");
+    } catch (cause) {
+      setError(errorMessage(cause));
+      setSubmitting(false);
+    }
   };
 
-  if (!ready || sessionUser) return <PageLoader />;
+  if (!ready || user) return <PageLoader />;
 
   return (
-    <AuthShell footer="Prototype sign-in — no real accounts or passwords are stored.">
+    <AuthShell footer="Your health details stay private to you and the doctor reviewing your request.">
       <div className="flex flex-1 flex-col pt-14 sm:pt-24">
         <h1 className="font-serif text-[46px] leading-none tracking-[-0.02em] sm:text-[54px]">
           Welcome
         </h1>
+        <p className="mt-4 text-[16px] leading-relaxed text-muted">
+          {mode === "signin"
+            ? "Sign in to review your intake requests."
+            : "Create your account, then take a short health assessment."}
+        </p>
 
-        <form onSubmit={handleSubmit} className="mt-10 sm:mt-12" noValidate>
-          <div className="space-y-9 sm:space-y-10">
+        <form onSubmit={handleSubmit} className="mt-8" noValidate>
+          <div className="space-y-7">
+            {mode === "signup" ? (
+              <Field label="Full name" htmlFor="name">
+                <Input
+                  id="name"
+                  name="name"
+                  autoComplete="name"
+                  placeholder="Your full name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  disabled={submitting}
+                />
+              </Field>
+            ) : null}
+
             <Field label="Email" htmlFor="email">
               <Input
                 id="email"
@@ -69,18 +137,29 @@ export default function LoginPage() {
                 placeholder="john@acme.com"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
+                disabled={submitting}
               />
             </Field>
 
-            <Field label="Password" htmlFor="password">
-              <Input
+            <Field
+              label="Password"
+              htmlFor="password"
+              hint={
+                mode === "signup"
+                  ? "Use 8+ characters with uppercase, lowercase, a number, and a symbol."
+                  : undefined
+              }
+            >
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
-                autoComplete="current-password"
+                autoComplete={
+                  mode === "signup" ? "new-password" : "current-password"
+                }
                 placeholder="**********"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                disabled={submitting}
               />
             </Field>
           </div>
@@ -91,28 +170,41 @@ export default function LoginPage() {
             </p>
           ) : null}
 
-          <Button size="lg" type="submit" className="mt-10 w-full">
-            Continue
+          <Button
+            size="lg"
+            type="submit"
+            className="mt-10 w-full"
+            disabled={submitting}
+          >
+            {submitting
+              ? "Checking…"
+              : mode === "signup"
+                ? "Create account"
+                : "Continue"}
           </Button>
         </form>
 
-        <div className="mt-8 rounded-[18px] bg-[#f6f8f9] p-5 text-sm leading-relaxed text-muted">
-          <p>
-            New here? Continue with any email and we&apos;ll create your account
-            and start your health assessment.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setEmail(DEMO_EMAIL);
-              setPassword(DEMO_PASSWORD);
-              setError("");
-            }}
-            className="mt-3 font-medium text-brand underline decoration-brand/30 underline-offset-4 transition hover:decoration-brand"
-          >
-            Use the demo patient account
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setMode((current) => (current === "signin" ? "signup" : "signin"));
+            setError("");
+          }}
+          disabled={submitting}
+          className="mt-7 self-center text-sm text-muted transition hover:text-brand disabled:opacity-50"
+        >
+          {mode === "signin" ? (
+            <>
+              New here?{" "}
+              <span className="font-medium text-brand">Create an account</span>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <span className="font-medium text-brand">Sign in</span>
+            </>
+          )}
+        </button>
       </div>
     </AuthShell>
   );

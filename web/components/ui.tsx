@@ -3,12 +3,13 @@
 import Link from "next/link";
 import {
   useEffect,
+  useState,
   type ComponentProps,
   type ReactNode,
 } from "react";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/lib/types";
-import { CheckIcon } from "./icons";
+import { CheckIcon, EyeIcon, EyeOffIcon } from "./icons";
 
 type ButtonVariant = "primary" | "soft" | "outline" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
@@ -65,6 +66,40 @@ export const inputClasses =
 
 export function Input({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn(inputClasses, className)} {...props} />;
+}
+
+export function PasswordInput({
+  className,
+  disabled,
+  ...props
+}: Omit<ComponentProps<"input">, "type">) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <Input
+        {...props}
+        type={visible ? "text" : "password"}
+        disabled={disabled}
+        className={cn("pr-14", className)}
+      />
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setVisible((current) => !current)}
+        aria-label={visible ? "Hide password" : "Show password"}
+        aria-pressed={visible}
+        title={visible ? "Hide password" : "Show password"}
+        className="absolute right-3 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-full text-[#777c7f] transition hover:bg-white/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:pointer-events-none disabled:opacity-50"
+      >
+        {visible ? (
+          <EyeOffIcon className="size-5" />
+        ) : (
+          <EyeIcon className="size-5" />
+        )}
+      </button>
+    </div>
+  );
 }
 
 export function Textarea({

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { User } from "@/lib/types";
 import { cn, firstName } from "@/lib/utils";
 import {
   CardIcon,
@@ -18,11 +17,13 @@ export function SiteHeader({
   onConnect,
   onSignOut,
   onPayments,
+  showDoctorLink = false,
 }: {
-  user: User;
+  user: { name: string; email: string };
   onConnect: () => void;
   onSignOut: () => void;
   onPayments?: () => void;
+  showDoctorLink?: boolean;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -155,15 +156,17 @@ export function SiteHeader({
                     </button>
                   ) : null}
 
-                  <Link
-                    href="/doctor"
-                    role="menuitem"
-                    onClick={() => setMenuOpen(false)}
-                    className={menuItem}
-                  >
-                    <DocIcon className="size-4 text-brand" />
-                    Doctor console
-                  </Link>
+                  {showDoctorLink ? (
+                    <Link
+                      href="/doctor"
+                      role="menuitem"
+                      onClick={() => setMenuOpen(false)}
+                      className={menuItem}
+                    >
+                      <DocIcon className="size-4 text-brand" />
+                      Doctor console
+                    </Link>
+                  ) : null}
                 </div>
 
                 <div className="my-1.5 h-px bg-line" />
