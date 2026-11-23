@@ -35,7 +35,7 @@ export class AuthService {
                     maxLifespan
                 })
                 .onConflictDoUpdate({
-                    target: [authSessions.id],
+                    target: [authSessions.userId],
                     set: {
                         token, expiresAt, maxLifespan
                     }

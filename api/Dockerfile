@@ -14,4 +14,4 @@ RUN pnpm run build
 
 EXPOSE 3001
 
-CMD ["npm", "start"]
+CMD ["npm", "start:prod"]

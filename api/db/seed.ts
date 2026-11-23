@@ -1,6 +1,7 @@
+import 'dotenv/config';
 import { hash } from 'argon2';
 import db from '../src/common/db/index.js';
-import { assessmentQuestions, assessments, ListingDocument, listingDocuments, listings as listingsTable, QuestionType, UserRole, users as usersTable } from '../src/common/db/schema.js';
+import { assessmentQuestions, assessments, listingDocuments, listings as listingsTable, QuestionType, UserRole, users as usersTable } from '../src/common/db/schema.js';
 import DATA from './seed_data.json' with {type: 'json'};
 
 export async function seed() {
@@ -36,9 +37,12 @@ export async function seed() {
     console.log(`Writing listings...`);
     const listings = await db
         .insert(listingsTable)
-        .values(DATA.listings.map(l => {
+        .values(DATA.listings.map((l, idx) => {
             const { documents, ...listing } = l;
-            return listing;
+            return {
+                ...listing,
+                productImage: `https://picsum.photos/seed/item${idx}/600`
+            };
         }))
         .onConflictDoNothing()
         .returning();

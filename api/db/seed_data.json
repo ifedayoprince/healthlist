@@ -1,21 +1,21 @@
 {
   "users": [
     {
-      "name": "Ada Demo",
-      "email": "ada@example.com",
-      "password": "demo-password-123",
+      "name": "Peter Hoppins",
+      "email": "peter@example.com",
+      "password": "Strong_Pass1",
       "role": "PATIENT"
     },
     {
-      "name": "Tunde Demo",
-      "email": "tunde@example.com",
-      "password": "demo-password-123",
+      "name": "Brian Mark",
+      "email": "brian@example.com",
+      "password": "Strong_Pass1",
       "role": "PATIENT"
     },
     {
-      "name": "Dr. Demo Reviewer",
-      "email": "doctor@example.com",
-      "password": "demo-password-123",
+      "name": "Dr. Jane Fisher",
+      "email": "jane@example.com",
+      "password": "Strong_Pass1",
       "role": "DOCTOR"
     }
   ],
