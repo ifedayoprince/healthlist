@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, Param, Get } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Param, Get, Query } from '@nestjs/common';
 import { IntakeService } from './intake.service.js';
 import { CreateIntakeSessionDto } from './dto/create-intake.dto.js';
 import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.js';
@@ -12,9 +12,11 @@ export class IntakeController {
   @Get()
   @HttpCode(200)
   async getIntakes(
-    @CurrentUser() user: AuthUser
+    @CurrentUser() user: AuthUser,
+    @Query('limit') limit: string,
+    @Query('cursor') cursor: string
   ) {
-    return await this.intakeService.getIntakes(user);
+    return await this.intakeService.getIntakes(user, limit ? parseInt(limit) : 10, cursor);
   }
 
   @Post()

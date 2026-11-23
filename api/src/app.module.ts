@@ -7,13 +7,15 @@ import { IntakeModule } from './intake/intake.module.js';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guards/auth.guard.js';
 import { AssessmentModule } from './assessment/assessment.module.js';
+import { DoctorConsoleModule } from './doctor-console/doctor-console.module.js';
 
 @Module({
   imports: [
     AuthModule,
     ListingModule,
     IntakeModule,
-    AssessmentModule
+    AssessmentModule,
+    DoctorConsoleModule
   ],
   controllers: [AppController],
   providers: [

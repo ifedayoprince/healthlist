@@ -10,6 +10,7 @@ import { email } from "envsafe";
 import logger from "../../common/logger.js";
 import { AllowMCPAccess } from "../../common/decorators/allow-mpc-access.decorator.js";
 import env from "../../common/env.js";
+import { DoctorOnly } from "../../common/decorators/doctor-only.decorator.js";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -22,7 +23,8 @@ export class AuthGuard implements CanActivate {
         const response = context.switchToHttp().getResponse() as Response;
         const sessionToken = request.cookies['sid'] ?? null;
 
-        if (this.reflector.getAllAndOverride(Public, [context.getHandler(), context.getClass()]))
+        const isPublic = this.reflector.getAllAndOverride(Public, [context.getHandler(), context.getClass()]);
+        if (isPublic)
             return true;
 
         const isMcpAllowed = this.reflector.getAllAndOverride(AllowMCPAccess, [context.getClass(), context.getHandler()]);
@@ -45,10 +47,17 @@ export class AuthGuard implements CanActivate {
         )
             throw new UnauthorizedException(`Invalid or expired session token`)
 
+        const isDoctorOnly = this.reflector.getAllAndOverride(DoctorOnly, [context.getHandler(), context.getClass()]);
+        const user = await this.getUser(session.userId);
+        if (isDoctorOnly && user.role != "DOCTOR") {
+            throw new UnauthorizedException(`Only authorized doctors can access this endpoint.`);
+        }
+
         // Refresh once the token has not reached its max lifespan
         // And the token is past it's half life
         await this.refreshSessionToken(response, session);
-        request.user = await this.getUser(session.userId);
+
+        request.user = user;
         return true;
     }
 
@@ -95,6 +104,7 @@ export class AuthGuard implements CanActivate {
             .select({
                 name: users.name,
                 id: users.id,
+                role: users.role,
                 joinedAt: users.joinedAt,
                 email: users.email
             })

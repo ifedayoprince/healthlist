@@ -1,0 +1,334 @@
+{
+  "type": "diff",
+  "version": "10",
+  "dialect": "postgres",
+  "id": "9345750d-7af7-4564-a404-11b5dd486fd2",
+  "prevIds": [
+    "c98f7984-14d7-42de-9cc9-6f6451b642b4"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "user_roles"
+      ],
+      "writes": [
+        "s|enum|public.user_roles",
+        "n|enum|public.user_roles",
+        "e|enum|public.user_roles",
+        "n|type|public.user_roles"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "rename_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "listings",
+        "required_info"
+      ],
+      "writes": [
+        "s|col|public.listings.required_info",
+        "n|col|public.listings.required_info",
+        "s|col|public.listings.additional_questions",
+        "n|col|public.listings.additional_questions"
+      ],
+      "reads": [
+        "n|tbl|public.listings",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "assessment_questions",
+        "is_preliminary"
+      ],
+      "writes": [
+        "s|col|public.assessment_questions.is_preliminary",
+        "n|col|public.assessment_questions.is_preliminary",
+        "e|col|public.assessment_questions.is_preliminary"
+      ],
+      "reads": [
+        "n|tbl|public.assessment_questions",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "intakes",
+        "submitted_at"
+      ],
+      "writes": [
+        "s|col|public.intakes.submitted_at",
+        "n|col|public.intakes.submitted_at",
+        "e|col|public.intakes.submitted_at"
+      ],
+      "reads": [
+        "n|tbl|public.intakes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "intakes",
+        "status_changed_at"
+      ],
+      "writes": [
+        "s|col|public.intakes.status_changed_at",
+        "n|col|public.intakes.status_changed_at",
+        "e|col|public.intakes.status_changed_at"
+      ],
+      "reads": [
+        "n|tbl|public.intakes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "users",
+        "role"
+      ],
+      "writes": [
+        "s|col|public.users.role",
+        "n|col|public.users.role",
+        "e|col|public.users.role"
+      ],
+      "reads": [
+        "n|tbl|public.users",
+        "n|sch|public",
+        "n|enum|public.user_roles"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "assessment_answers",
+        "answer"
+      ],
+      "writes": [
+        "s|colprop|public.assessment_answers.answer.notNull"
+      ],
+      "reads": [
+        "n|tbl|public.assessment_answers",
+        "n|sch|public",
+        "n|col|public.assessment_answers.answer"
+      ],
+      "sqlHash": "a04702c0c229abd4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "assessment_answers",
+        "answered_at"
+      ],
+      "writes": [
+        "s|colprop|public.assessment_answers.answered_at.notNull"
+      ],
+      "reads": [
+        "n|tbl|public.assessment_answers",
+        "n|sch|public",
+        "n|col|public.assessment_answers.answered_at"
+      ],
+      "sqlHash": "950c18d091300397"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "intakes",
+        "user_id"
+      ],
+      "writes": [
+        "s|colprop|public.intakes.user_id.notNull"
+      ],
+      "reads": [
+        "n|tbl|public.intakes",
+        "n|sch|public",
+        "n|col|public.intakes.user_id"
+      ],
+      "sqlHash": "4e29307691963ac1"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "intakes",
+        "created_at"
+      ],
+      "writes": [
+        "s|colprop|public.intakes.created_at.notNull",
+        "s|colprop|public.intakes.created_at.type",
+        "s|colprop|public.intakes.created_at.default"
+      ],
+      "reads": [
+        "n|tbl|public.intakes",
+        "n|sch|public",
+        "n|col|public.intakes.created_at"
+      ],
+      "sqlHash": "579e05db810797a4"
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "listing_documents",
+        "excerpt"
+      ],
+      "writes": [
+        "s|colprop|public.listing_documents.excerpt.type",
+        "s|colprop|public.listing_documents.excerpt.default"
+      ],
+      "reads": [
+        "n|tbl|public.listing_documents",
+        "n|sch|public",
+        "n|col|public.listing_documents.excerpt"
+      ],
+      "sqlHash": "ac87b14791fa6793"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "rename",
+      "key": "columns\u0000[\"public\",\"listings\",\"required_info\"]",
+      "set": {
+        "name": "additional_questions"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "user_roles",
+        "values": [
+          "PATIENT",
+          "DOCTOR"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "assessment_questions",
+        "name": "is_preliminary",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "intakes",
+        "name": "submitted_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "intakes",
+        "name": "status_changed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "users",
+        "name": "role",
+        "type": "user_roles",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'PATIENT'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"assessment_answers\",\"answer\"]",
+      "set": {
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"assessment_answers\",\"answered_at\"]",
+      "set": {
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"intakes\",\"user_id\"]",
+      "set": {
+        "notNull": false
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"intakes\",\"created_at\"]",
+      "set": {
+        "type": "timestamp with time zone",
+        "notNull": true
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"listing_documents\",\"excerpt\"]",
+      "set": {
+        "type": "varchar(255)"
+      }
+    }
+  ]
+}

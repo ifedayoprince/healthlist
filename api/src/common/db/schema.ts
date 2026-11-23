@@ -1,11 +1,15 @@
 import { sql } from "drizzle-orm";
 import { boolean, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
+export const userRoleEnum = pgEnum('user_roles', ['PATIENT', 'DOCTOR']);
+export type UserRole = (typeof userRoleEnum.enumValues)[number];
+
 export const users = pgTable("users", {
     id: uuid('id').defaultRandom().primaryKey(),
     name: varchar('name', { length: 255 }).notNull(),
     email: varchar('email', { length: 255 }).notNull().unique(),
     password: text('password').notNull(),
+    role: userRoleEnum('role').default('PATIENT').notNull(),
     joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow()
 });
 
@@ -35,6 +39,8 @@ export const questionTypesEnum = pgEnum('question_types', [
     "YES_NO_TEXT",
     "TEXT_LIST"
 ]);
+export type QuestionType = (typeof questionTypesEnum.enumValues)[number];
+
 export const assessmentQuestions = pgTable("assessment_questions", {
     id: uuid('id').defaultRandom().primaryKey(),
     key: varchar('key', { length: 50 }).notNull().unique(),
@@ -75,7 +81,7 @@ export const listings = pgTable("listings", {
         .array()
         .default([])
         .notNull(),
-    createdAt: timestamp('created_at', {withTimezone: true}).defaultNow().notNull()
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull()
 });
 export type Listing = typeof listings.$inferSelect;
 
@@ -89,7 +95,7 @@ export const listingDocuments = pgTable("listing_documents", {
     name: varchar('name', { length: 50 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 
-    excerpt: varchar('excerpt', {length: 255}).default(""),
+    excerpt: varchar('excerpt', { length: 255 }).default(""),
     metadata: jsonb('metadata').$type<{
         price: number;
         category: string[];
@@ -128,11 +134,12 @@ export const intakes = pgTable("intakes", {
     key: varchar('key', { length: 50 }).notNull().unique(),
     userId: uuid('user_id').references(() => users.id),
     status: intakeStatusEnum('status')
-    .default('PENDING')
-    .notNull(),
+        .default('PENDING')
+        .notNull(),
     doctorRemark: text('doctor_remark'),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    submittedAt: timestamp('submitted_at'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    submittedAt: timestamp('submitted_at', { withTimezone: true }),
+    statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
 });
 export type Intake = typeof intakes.$inferSelect;
 

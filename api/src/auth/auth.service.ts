@@ -1,5 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
-import { AuthenticateUserDto } from './dto/authenticate.dto.js';
+import { ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import db from '../common/db/index.js';
 import { assessments, authSessions, users } from '../common/db/schema.js';
 import { eq, sql } from 'drizzle-orm';
@@ -9,67 +8,38 @@ import { generateSessionToken } from '../common/session-token.util.js';
 import { AssessmentTestItem } from '../common/types.js';
 import { trycatchE } from '../common/trycatch.js';
 import { type Response } from 'express';
+import { SigninUserDto } from './dto/sign-in.dto.js';
+import { SignupUserDto } from './dto/sign-up.dto.js';
 
 @Injectable()
 export class AuthService {
     constructor() { }
 
-    async authenticateUser(res: Response, dto: AuthenticateUserDto) {
-        const [existingUser] = await db.select().from(users).where(eq(users.email, dto.email));
-
-        let isFirstSignup = false;
-        if (!existingUser) {
-            logger.info({
-                message: `User has not signed up yet. Proceeding with signup flag`,
-                context: AuthService.name
-            });
-            if (!dto.name)
-                throw new BadRequestException(`'name' is required when the signing up for the first time.`);
-
-            isFirstSignup = true;
-        }
-
-        if (
-            !isFirstSignup
-            && !(await verify(existingUser.password, dto.password))
-        )
+    async signinUser(res: Response, dto: SigninUserDto) {
+        const [user] = await db.select().from(users).where(eq(users.email, dto.email));
+        if (!user)
             throw new UnauthorizedException(`Invalid credentials.`)
 
-        const passwordHash = isFirstSignup
-            ? await trycatchE(() => hash(dto.password),
-                () => {
-                    logger.error({
-                        message: "Error hashing the provided password.",
-                        context: AuthService.name
-                    });
-                    return new InternalServerErrorException('We ran into an issue during authentication. Please try again later.')
-                })
-            : null;
-
+        if (!(await verify(user.password, dto.password)))
+            throw new UnauthorizedException(`Invalid credentials.`)
 
         const { token, expiresAt, maxLifespan } = generateSessionToken();
 
         const result = await db.transaction(async (tx) => {
-            const [user] = isFirstSignup
-                ? await tx
-                    .insert(users)
-                    .values({
-                        name: dto.name!,
-                        email: dto.email,
-                        password: passwordHash!
-                    })
-                    .returning()
-                : [existingUser];
-
             await tx
                 .insert(authSessions)
                 .values({
                     userId: user.id,
-                    token: token,
+                    token,
                     expiresAt,
                     maxLifespan
+                })
+                .onConflictDoUpdate({
+                    target: [authSessions.id],
+                    set: {
+                        token, expiresAt, maxLifespan
+                    }
                 });
-
 
             let [assessment] = await tx
                 .select()
@@ -102,8 +72,7 @@ WHERE
 `);
 
             return {
-                pendingQuestions: pendingQuestions.rows,
-                user
+                pendingQuestions: pendingQuestions.rows
             };
         });
 
@@ -116,10 +85,67 @@ WHERE
         });
 
         return {
-            isFirstSignup,
+            isFirstSignup: false,
+            name: user.name,
+            email: user.email,
+            hasPendingAssessment: result.pendingQuestions.length > 0
+        }
+    }
+    async signupUser(res: Response, dto: SignupUserDto) {
+        const [existingUser] = await db.select().from(users).where(eq(users.email, dto.email));
+        if (existingUser)
+            throw new ConflictException(`This email is already in use.`)
+
+        const passwordHash = await trycatchE(() => hash(dto.password),
+            () => {
+                logger.error({
+                    message: "Error hashing the provided password.",
+                    context: AuthService.name
+                });
+                return new InternalServerErrorException('We ran into an issue during authentication. Please try again later.')
+            });
+
+        const { token, expiresAt, maxLifespan } = generateSessionToken();
+
+        const result = await db.transaction(async (tx) => {
+            const [user] = await tx
+                .insert(users)
+                .values({
+                    name: dto.name!,
+                    email: dto.email,
+                    password: passwordHash!
+                })
+                .returning()
+
+            await tx
+                .insert(authSessions)
+                .values({
+                    userId: user.id,
+                    token: token,
+                    expiresAt,
+                    maxLifespan
+                });
+
+            await tx
+                .insert(assessments)
+                .values({ userId: user.id });
+
+            return { user }
+        })
+
+        res.cookie('sid', token, {
+            httpOnly: true,
+            sameSite: "lax",
+            path: '/',
+            expires: expiresAt,
+            maxAge: expiresAt.getTime() - Date.now()
+        });
+
+        return {
+            isFirstSignup: true,
             name: result.user.name,
             email: result.user.email,
-            hasPendingAssessment: result.pendingQuestions.length > 0
+            hasPendingAssessment: true
         }
     }
 }

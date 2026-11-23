@@ -1,0 +1,1160 @@
+{
+  "users": [
+    {
+      "name": "Ada Demo",
+      "email": "ada@example.com",
+      "password": "demo-password-123",
+      "role": "PATIENT"
+    },
+    {
+      "name": "Tunde Demo",
+      "email": "tunde@example.com",
+      "password": "demo-password-123",
+      "role": "PATIENT"
+    },
+    {
+      "name": "Dr. Demo Reviewer",
+      "email": "doctor@example.com",
+      "password": "demo-password-123",
+      "role": "DOCTOR"
+    }
+  ],
+  "assessmentQuestions": [
+    {
+      "key": "conditions",
+      "question": "Have you been diagnosed with any of the following conditions?",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "heart_disease",
+          "value": "Heart disease"
+        },
+        {
+          "key": "kidney_disease",
+          "value": "Kidney disease"
+        },
+        {
+          "key": "liver_disease",
+          "value": "Liver disease"
+        },
+        {
+          "key": "diabetes",
+          "value": "Diabetes"
+        },
+        {
+          "key": "high_blood_pressure",
+          "value": "High blood pressure"
+        },
+        {
+          "key": "thyroid_disorder",
+          "value": "Thyroid disorder"
+        },
+        {
+          "key": "mental_health_condition",
+          "value": "Mental health condition"
+        },
+        {
+          "key": "none",
+          "value": "None of these"
+        }
+      ]
+    },
+    {
+      "key": "current_medications",
+      "question": "List any prescription or over-the-counter medications and supplements you currently take.",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "TEXT_LIST",
+      "options": null
+    },
+    {
+      "key": "allergies",
+      "question": "Do you have any known drug allergies? If yes, which drug and what happened?",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "past_reactions",
+      "question": "Have you ever had a serious reaction to a medication? If yes, please describe.",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "pregnancy_status",
+      "question": "Are you pregnant, trying to conceive, or breastfeeding?",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "YES_NO",
+      "options": null
+    },
+    {
+      "key": "recent_care",
+      "question": "Have you seen a doctor or been hospitalized in the last 12 months? If yes, what for?",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "substance_use",
+      "question": "Do you use any of the following?",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "tobacco",
+          "value": "Tobacco or nicotine"
+        },
+        {
+          "key": "alcohol",
+          "value": "Alcohol"
+        },
+        {
+          "key": "recreational_drugs",
+          "value": "Recreational drugs"
+        },
+        {
+          "key": "none",
+          "value": "None of these"
+        }
+      ]
+    },
+    {
+      "key": "consent_share",
+      "question": "I agree to share my answers with a reviewing doctor.",
+      "isPreliminary": true,
+      "isRequired": true,
+      "type": "YES_NO",
+      "options": null
+    },
+    {
+      "key": "sleep_hours_per_night",
+      "question": "On average, how many hours do you sleep per night?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "under_4",
+          "value": "Under 4 hours"
+        },
+        {
+          "key": "4_to_6",
+          "value": "4 to 6 hours"
+        },
+        {
+          "key": "6_to_8",
+          "value": "6 to 8 hours"
+        },
+        {
+          "key": "over_8",
+          "value": "Over 8 hours"
+        }
+      ]
+    },
+    {
+      "key": "caffeine_per_day",
+      "question": "How many caffeinated drinks do you have per day?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "0",
+          "value": "None"
+        },
+        {
+          "key": "1_2",
+          "value": "1 to 2"
+        },
+        {
+          "key": "3_4",
+          "value": "3 to 4"
+        },
+        {
+          "key": "5_plus",
+          "value": "5 or more"
+        }
+      ]
+    },
+    {
+      "key": "previous_sleep_treatments",
+      "question": "Have you tried any treatments for sleep problems before? If yes, what and how did it go?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "skin_concern_duration",
+      "question": "How long have you had your main skin concern?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "under_1_month",
+          "value": "Less than a month"
+        },
+        {
+          "key": "1_to_6_months",
+          "value": "1 to 6 months"
+        },
+        {
+          "key": "6_to_12_months",
+          "value": "6 to 12 months"
+        },
+        {
+          "key": "over_1_year",
+          "value": "Over a year"
+        }
+      ]
+    },
+    {
+      "key": "current_topicals",
+      "question": "List any creams, gels or other skin products you currently use.",
+      "isPreliminary": false,
+      "isRequired": false,
+      "type": "TEXT_LIST",
+      "options": null
+    },
+    {
+      "key": "recent_bp_reading",
+      "question": "Do you have a blood pressure reading from the last 3 months? If yes, enter it and the date.",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "cholesterol_reading",
+      "question": "Do you have a cholesterol result from the last 12 months? If yes, enter it and the date.",
+      "isPreliminary": false,
+      "isRequired": false,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "previous_weight_programs",
+      "question": "Have you tried a weight management program before? If yes, what and how did it go?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "eating_disorder_history",
+      "question": "Have you ever been diagnosed with or treated for an eating disorder?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "YES_NO",
+      "options": null
+    },
+    {
+      "key": "exercise_per_week",
+      "question": "How many days per week do you do at least 30 minutes of exercise?",
+      "isPreliminary": false,
+      "isRequired": false,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "0",
+          "value": "None"
+        },
+        {
+          "key": "1_2",
+          "value": "1 to 2 days"
+        },
+        {
+          "key": "3_4",
+          "value": "3 to 4 days"
+        },
+        {
+          "key": "5_plus",
+          "value": "5 or more days"
+        }
+      ]
+    },
+    {
+      "key": "hair_loss_duration",
+      "question": "How long have you noticed hair thinning or loss?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "under_6_months",
+          "value": "Under 6 months"
+        },
+        {
+          "key": "6_to_12_months",
+          "value": "6 to 12 months"
+        },
+        {
+          "key": "1_to_3_years",
+          "value": "1 to 3 years"
+        },
+        {
+          "key": "over_3_years",
+          "value": "Over 3 years"
+        }
+      ]
+    },
+    {
+      "key": "family_history_hair_loss",
+      "question": "Does hair loss run in your family?",
+      "isPreliminary": false,
+      "isRequired": false,
+      "type": "YES_NO",
+      "options": null
+    },
+    {
+      "key": "headache_frequency",
+      "question": "How often do you get severe headaches?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "rarely",
+          "value": "Rarely"
+        },
+        {
+          "key": "monthly",
+          "value": "A few times a month"
+        },
+        {
+          "key": "weekly",
+          "value": "Weekly"
+        },
+        {
+          "key": "daily",
+          "value": "Almost daily"
+        }
+      ]
+    },
+    {
+      "key": "previous_migraine_treatments",
+      "question": "Have you tried treatments for headaches or migraines before? If yes, what and how did it go?",
+      "isPreliminary": false,
+      "isRequired": false,
+      "type": "YES_NO_TEXT",
+      "options": null
+    },
+    {
+      "key": "digestive_symptoms",
+      "question": "Which of these digestive symptoms do you experience regularly?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "heartburn",
+          "value": "Heartburn"
+        },
+        {
+          "key": "bloating",
+          "value": "Bloating"
+        },
+        {
+          "key": "constipation",
+          "value": "Constipation"
+        },
+        {
+          "key": "diarrhea",
+          "value": "Diarrhea"
+        },
+        {
+          "key": "nausea",
+          "value": "Nausea"
+        },
+        {
+          "key": "none",
+          "value": "None of these"
+        }
+      ]
+    },
+    {
+      "key": "seasonal_allergy_triggers",
+      "question": "Which of these trigger your allergy symptoms?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "pollen",
+          "value": "Pollen"
+        },
+        {
+          "key": "dust",
+          "value": "Dust"
+        },
+        {
+          "key": "pets",
+          "value": "Pet dander"
+        },
+        {
+          "key": "mold",
+          "value": "Mold"
+        },
+        {
+          "key": "unsure",
+          "value": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "cycle_regularity",
+      "question": "How regular are your menstrual cycles?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "regular",
+          "value": "Regular"
+        },
+        {
+          "key": "irregular",
+          "value": "Irregular"
+        },
+        {
+          "key": "absent",
+          "value": "I don't have periods"
+        },
+        {
+          "key": "na",
+          "value": "Not applicable"
+        }
+      ]
+    },
+    {
+      "key": "menopause_symptoms",
+      "question": "Which of these symptoms do you experience?",
+      "isPreliminary": false,
+      "isRequired": true,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "hot_flashes",
+          "value": "Hot flashes"
+        },
+        {
+          "key": "night_sweats",
+          "value": "Night sweats"
+        },
+        {
+          "key": "mood_changes",
+          "value": "Mood changes"
+        },
+        {
+          "key": "sleep_issues",
+          "value": "Sleep issues"
+        },
+        {
+          "key": "none",
+          "value": "None of these"
+        }
+      ]
+    },
+    {
+      "key": "energy_dip_timing",
+      "question": "When do you usually feel most run down?",
+      "isPreliminary": false,
+      "isRequired": false,
+      "type": "MULTI_SELECT",
+      "options": [
+        {
+          "key": "morning",
+          "value": "Morning"
+        },
+        {
+          "key": "afternoon",
+          "value": "Afternoon"
+        },
+        {
+          "key": "evening",
+          "value": "Evening"
+        },
+        {
+          "key": "all_day",
+          "value": "All day"
+        }
+      ]
+    }
+  ],
+  "listings": [
+    {
+      "slug": "restwell-sleep-program",
+      "brand": "Nightfall Labs",
+      "reviews": 128,
+      "productImage": "/images/listings/restwell-sleep-program.png",
+      "additionalQuestions": [
+        "sleep_hours_per_night",
+        "caffeine_per_day"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Restwell Sleep Program",
+          "excerpt": "Monthly sleep support for adults who struggle to fall or stay asleep.",
+          "metadata": {
+            "price": 39,
+            "category": [
+              "sleep"
+            ]
+          },
+          "body": "A monthly program for adults with trouble falling asleep or staying asleep. A clinician reviews your history, and a 30-day supply ships if approved. (Fictional demo listing.)",
+          "searchTags": [
+            "insomnia",
+            "can't sleep",
+            "trouble sleeping",
+            "sleep",
+            "restless nights",
+            "tired"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "deep-sleep-plus",
+      "brand": "Nightfall Labs",
+      "reviews": 54,
+      "productImage": "/images/listings/deep-sleep-plus.png",
+      "additionalQuestions": [
+        "previous_sleep_treatments"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": false,
+          "name": "Deep Sleep Plus",
+          "excerpt": "A stronger sleep program for people who have tried other approaches.",
+          "metadata": {
+            "price": 59,
+            "category": [
+              "sleep"
+            ]
+          },
+          "body": "A stronger sleep program for people who have already tried other approaches. (Fictional demo listing.)",
+          "searchTags": [
+            "insomnia",
+            "sleep"
+          ]
+        },
+        {
+          "version": 2,
+          "isActive": true,
+          "name": "Deep Sleep Plus",
+          "excerpt": "A stronger sleep program for people who have tried other approaches. Updated for clearer eligibility notes.",
+          "metadata": {
+            "price": 59,
+            "category": [
+              "sleep"
+            ]
+          },
+          "body": "A stronger sleep program for people who have already tried other approaches. Not suitable during pregnancy or breastfeeding, and not for people with certain liver conditions. (Fictional demo listing.)",
+          "searchTags": [
+            "insomnia",
+            "chronic insomnia",
+            "sleep",
+            "waking at night",
+            "tried melatonin"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "calm-nights-gummies",
+      "brand": "Nightfall Labs",
+      "reviews": 212,
+      "productImage": "/images/listings/calm-nights-gummies.png",
+      "additionalQuestions": [
+        "sleep_hours_per_night"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Calm Nights Gummies",
+          "excerpt": "A gentle non-prescription-style nightly wind-down supplement.",
+          "metadata": {
+            "price": 24,
+            "category": [
+              "sleep",
+              "supplement"
+            ]
+          },
+          "body": "A gentle nightly wind-down supplement for mild, occasional sleeplessness, with a quick clinician check. (Fictional demo listing.)",
+          "searchTags": [
+            "mild insomnia",
+            "wind down",
+            "relax at night",
+            "sleep aid",
+            "supplement"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "clearskin-topical-plan",
+      "brand": "Clearwell",
+      "reviews": 312,
+      "productImage": "/images/listings/clearskin-topical-plan.png",
+      "additionalQuestions": [
+        "skin_concern_duration",
+        "current_topicals"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "ClearSkin Topical Plan",
+          "excerpt": "A topical plan for persistent breakouts, reviewed by a clinician.",
+          "metadata": {
+            "price": 45,
+            "category": [
+              "skin"
+            ]
+          },
+          "body": "A topical plan for persistent breakouts. A clinician reviews your history before a 60-day supply ships. (Fictional demo listing.)",
+          "searchTags": [
+            "acne",
+            "breakouts",
+            "pimples",
+            "blemishes",
+            "oily skin",
+            "skin"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "glow-renewal-cream",
+      "brand": "Clearwell",
+      "reviews": 87,
+      "productImage": "/images/listings/glow-renewal-cream.png",
+      "additionalQuestions": [
+        "current_topicals"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Glow Renewal Cream",
+          "excerpt": "A prescription-strength renewal cream for uneven tone and fine lines.",
+          "metadata": {
+            "price": 65,
+            "category": [
+              "skin",
+              "anti-aging"
+            ]
+          },
+          "body": "A prescription-strength renewal cream for uneven tone and fine lines. Not suitable during pregnancy or breastfeeding. (Fictional demo listing.)",
+          "searchTags": [
+            "wrinkles",
+            "fine lines",
+            "dark spots",
+            "uneven tone",
+            "anti-aging",
+            "skin"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "calm-skin-care-plan",
+      "brand": "Clearwell",
+      "reviews": 96,
+      "productImage": "/images/listings/calm-skin-care-plan.png",
+      "additionalQuestions": [
+        "skin_concern_duration",
+        "current_topicals"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Calm Skin Care Plan",
+          "excerpt": "A topical plan for dry, itchy, irritated skin.",
+          "metadata": {
+            "price": 38,
+            "category": [
+              "skin",
+              "eczema"
+            ]
+          },
+          "body": "A topical plan for dry, itchy, irritated skin, reviewed by a clinician. (Fictional demo listing.)",
+          "searchTags": [
+            "eczema",
+            "itchy skin",
+            "dry skin",
+            "rash",
+            "irritation",
+            "dermatitis"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "regrowth-foam-plan",
+      "brand": "Rootwell",
+      "reviews": 441,
+      "productImage": "/images/listings/regrowth-foam-plan.png",
+      "additionalQuestions": [
+        "hair_loss_duration",
+        "family_history_hair_loss"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Regrowth Foam Plan",
+          "excerpt": "A topical foam plan to slow thinning and support regrowth.",
+          "metadata": {
+            "price": 29,
+            "category": [
+              "hair"
+            ]
+          },
+          "body": "A topical foam plan to slow thinning and support regrowth, with a clinician check before it ships. (Fictional demo listing.)",
+          "searchTags": [
+            "hair loss",
+            "thinning hair",
+            "balding",
+            "receding hairline",
+            "regrowth",
+            "hair"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "thick-hair-daily",
+      "brand": "Rootwell",
+      "reviews": 158,
+      "productImage": "/images/listings/thick-hair-daily.png",
+      "additionalQuestions": [
+        "hair_loss_duration"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Thick Hair Daily",
+          "excerpt": "A daily supplement plan for hair that sheds or feels fragile.",
+          "metadata": {
+            "price": 34,
+            "category": [
+              "hair",
+              "supplement"
+            ]
+          },
+          "body": "A daily supplement plan for hair that sheds or feels fragile, with a clinician check. (Fictional demo listing.)",
+          "searchTags": [
+            "hair shedding",
+            "brittle hair",
+            "hair supplement",
+            "thin hair",
+            "hair"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "steady-pressure-program",
+      "brand": "Northpeak Health",
+      "reviews": 41,
+      "productImage": "/images/listings/steady-pressure-program.png",
+      "additionalQuestions": [
+        "recent_bp_reading"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Steady Pressure Program",
+          "excerpt": "Home blood pressure tracking with clinician review.",
+          "metadata": {
+            "price": 49,
+            "category": [
+              "heart",
+              "blood pressure"
+            ]
+          },
+          "body": "A program that pairs home blood pressure tracking with clinician review. A recent reading helps the reviewing doctor. (Fictional demo listing.)",
+          "searchTags": [
+            "high blood pressure",
+            "hypertension",
+            "blood pressure",
+            "bp",
+            "heart health"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "heart-habit-program",
+      "brand": "Northpeak Health",
+      "reviews": 33,
+      "productImage": "/images/listings/heart-habit-program.png",
+      "additionalQuestions": [
+        "cholesterol_reading",
+        "exercise_per_week"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Heart Habit Program",
+          "excerpt": "Cholesterol and lifestyle support with clinician review.",
+          "metadata": {
+            "price": 55,
+            "category": [
+              "heart",
+              "cholesterol"
+            ]
+          },
+          "body": "A program combining lifestyle coaching and clinician review for people watching their cholesterol. (Fictional demo listing.)",
+          "searchTags": [
+            "cholesterol",
+            "heart health",
+            "lipids",
+            "statin",
+            "lifestyle"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "balanced-weight-program",
+      "brand": "Evergreen Rx",
+      "reviews": 506,
+      "productImage": "/images/listings/balanced-weight-program.png",
+      "additionalQuestions": [
+        "previous_weight_programs",
+        "eating_disorder_history"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Balanced Weight Program",
+          "excerpt": "A medically supervised weight management program with coaching.",
+          "metadata": {
+            "price": 199,
+            "category": [
+              "weight"
+            ]
+          },
+          "body": "A medically supervised weight management program with coaching and clinician review. Requires prior program history. (Fictional demo listing.)",
+          "searchTags": [
+            "weight loss",
+            "lose weight",
+            "obesity",
+            "appetite",
+            "weight management"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "steady-scale-coaching",
+      "brand": "Evergreen Rx",
+      "reviews": 77,
+      "productImage": "/images/listings/steady-scale-coaching.png",
+      "additionalQuestions": [
+        "exercise_per_week",
+        "previous_weight_programs"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Steady Scale Coaching",
+          "excerpt": "Coaching-led healthy weight program, no prescription required.",
+          "metadata": {
+            "price": 79,
+            "category": [
+              "weight",
+              "coaching"
+            ]
+          },
+          "body": "A coaching-led healthy weight program built around habits, with an optional clinician review. (Fictional demo listing.)",
+          "searchTags": [
+            "weight",
+            "coaching",
+            "habits",
+            "healthy eating",
+            "exercise"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "daily-energy-support",
+      "brand": "Lumen Care",
+      "reviews": 19,
+      "productImage": "/images/listings/daily-energy-support.png",
+      "additionalQuestions": [
+        "energy_dip_timing"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Daily Energy Support",
+          "excerpt": "A program for adults who feel run down, with a clinician history check.",
+          "metadata": {
+            "price": 42,
+            "category": [
+              "energy"
+            ]
+          },
+          "body": "A program for adults who feel run down. A clinician checks your history before anything is approved. (Fictional demo listing.)",
+          "searchTags": [
+            "fatigue",
+            "tired",
+            "low energy",
+            "run down",
+            "exhausted",
+            "energy"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "focus-clarity-plan",
+      "brand": "Lumen Care",
+      "reviews": 28,
+      "productImage": "/images/listings/focus-clarity-plan.png",
+      "additionalQuestions": [
+        "caffeine_per_day",
+        "sleep_hours_per_night"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Focus Clarity Plan",
+          "excerpt": "Support for focus and mental clarity, with a clinician review.",
+          "metadata": {
+            "price": 52,
+            "category": [
+              "focus"
+            ]
+          },
+          "body": "A plan for people who struggle with focus and mental clarity, reviewed by a clinician. (Fictional demo listing.)",
+          "searchTags": [
+            "focus",
+            "brain fog",
+            "concentration",
+            "clarity",
+            "distracted"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "seasonal-relief-plan",
+      "brand": "Breezeway",
+      "reviews": 190,
+      "productImage": "/images/listings/seasonal-relief-plan.png",
+      "additionalQuestions": [
+        "seasonal_allergy_triggers"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Seasonal Relief Plan",
+          "excerpt": "Allergy relief plan for sneezing, itchy eyes and congestion.",
+          "metadata": {
+            "price": 31,
+            "category": [
+              "allergy"
+            ]
+          },
+          "body": "An allergy relief plan for sneezing, itchy eyes and congestion, with a clinician check. (Fictional demo listing.)",
+          "searchTags": [
+            "hay fever",
+            "allergies",
+            "sneezing",
+            "itchy eyes",
+            "stuffy nose",
+            "pollen"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "gut-comfort-program",
+      "brand": "Gutwell",
+      "reviews": 64,
+      "productImage": "/images/listings/gut-comfort-program.png",
+      "additionalQuestions": [
+        "digestive_symptoms"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Gut Comfort Program",
+          "excerpt": "Support for bloating, irregularity and digestive discomfort.",
+          "metadata": {
+            "price": 36,
+            "category": [
+              "digestive"
+            ]
+          },
+          "body": "A program for regular bloating, irregularity and digestive discomfort, reviewed by a clinician. (Fictional demo listing.)",
+          "searchTags": [
+            "bloating",
+            "ibs",
+            "constipation",
+            "gut health",
+            "stomach",
+            "digestion"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "acid-ease-plan",
+      "brand": "Gutwell",
+      "reviews": 118,
+      "productImage": "/images/listings/acid-ease-plan.png",
+      "additionalQuestions": [
+        "digestive_symptoms"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Acid Ease Plan",
+          "excerpt": "A plan for frequent heartburn and acid reflux.",
+          "metadata": {
+            "price": 33,
+            "category": [
+              "digestive",
+              "reflux"
+            ]
+          },
+          "body": "A plan for frequent heartburn and acid reflux, with a clinician review before it ships. (Fictional demo listing.)",
+          "searchTags": [
+            "heartburn",
+            "acid reflux",
+            "gerd",
+            "indigestion",
+            "burning chest"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "migraine-care-plan",
+      "brand": "Headway",
+      "reviews": 72,
+      "productImage": "/images/listings/migraine-care-plan.png",
+      "additionalQuestions": [
+        "headache_frequency",
+        "previous_migraine_treatments"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Migraine Care Plan",
+          "excerpt": "A clinician-reviewed plan for frequent migraines and severe headaches.",
+          "metadata": {
+            "price": 68,
+            "category": [
+              "neurology",
+              "migraine"
+            ]
+          },
+          "body": "A clinician-reviewed plan for people with frequent migraines or severe headaches. (Fictional demo listing.)",
+          "searchTags": [
+            "migraine",
+            "headache",
+            "severe headaches",
+            "light sensitivity",
+            "head pain"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "cycle-comfort-plan",
+      "brand": "Bloomline",
+      "reviews": 83,
+      "productImage": "/images/listings/cycle-comfort-plan.png",
+      "additionalQuestions": [
+        "cycle_regularity"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Cycle Comfort Plan",
+          "excerpt": "Support for painful or irregular periods.",
+          "metadata": {
+            "price": 44,
+            "category": [
+              "women's health"
+            ]
+          },
+          "body": "A plan for painful or irregular periods, reviewed by a clinician. Not for use during pregnancy. (Fictional demo listing.)",
+          "searchTags": [
+            "period pain",
+            "cramps",
+            "irregular periods",
+            "pms",
+            "cycle",
+            "women's health"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "menopause-support-plan",
+      "brand": "Bloomline",
+      "reviews": 61,
+      "productImage": "/images/listings/menopause-support-plan.png",
+      "additionalQuestions": [
+        "menopause_symptoms"
+      ],
+      "documents": [
+        {
+          "version": 1,
+          "isActive": true,
+          "name": "Menopause Support Plan",
+          "excerpt": "Support for hot flashes, night sweats and sleep changes.",
+          "metadata": {
+            "price": 57,
+            "category": [
+              "women's health",
+              "menopause"
+            ]
+          },
+          "body": "A plan for common menopause symptoms such as hot flashes, night sweats and sleep changes, reviewed by a clinician. (Fictional demo listing.)",
+          "searchTags": [
+            "menopause",
+            "hot flashes",
+            "night sweats",
+            "perimenopause",
+            "mood changes"
+          ]
+        }
+      ]
+    }
+  ]
+}
