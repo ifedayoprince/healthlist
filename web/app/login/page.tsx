@@ -31,8 +31,8 @@ export default function LoginPage() {
     if (!ready || !user || redirecting.current) return;
 
     if (user.role === "DOCTOR") {
-      consumeRedirect();
-      router.replace("/doctor");
+      const next = consumeRedirect();
+      router.replace(next?.startsWith("/doctor") ? next : "/doctor");
       return;
     }
 
@@ -78,10 +78,14 @@ export default function LoginPage() {
             });
 
       redirecting.current = true;
+      // Release the form before navigating. The login page can stay alive in
+      // the router cache, and a stuck "Checking…" would otherwise reappear on
+      // the next visit (e.g. after signing out).
+      setSubmitting(false);
 
       if (sessionUser.role === "DOCTOR") {
-        consumeRedirect();
-        router.replace("/doctor");
+        const next = consumeRedirect();
+        router.replace(next?.startsWith("/doctor") ? next : "/doctor");
         return;
       }
 

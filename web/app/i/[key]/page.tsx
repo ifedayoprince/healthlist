@@ -1,11 +1,9 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   CheckIcon,
-  ChevronRightIcon,
-  CloseIcon,
   LockIcon,
 } from "@/components/icons";
 import {
@@ -13,31 +11,47 @@ import {
   QuestionField,
   sanitizeAnswer,
 } from "@/components/question-field";
-import { RequireAuth } from "@/components/require-auth";
+import { ListingPreview, ListingThumb } from "@/components/listing-preview";
 import {
   AuthShell,
   Button,
-  Modal,
   StatusBadge,
 } from "@/components/ui";
 import { ApiError, errorMessage } from "@/lib/api/client";
 import { getIntake, submitIntake } from "@/lib/api/intake";
 import type { ApiListing, IntakeSession } from "@/lib/api/types";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import { rememberRedirect } from "@/lib/redirect";
 
-type LoadStatus = "loading" | "ready" | "error" | "not_found";
+type LoadStatus =
+  | "loading"
+  | "ready"
+  | "error"
+  | "not_found"
+  | "signin_required";
 
 export default function IntakePage() {
   return (
-    <RequireAuth>
+    <Suspense fallback={<IntakeLoading />}>
       <IntakeSessionPage />
-    </RequireAuth>
+    </Suspense>
+  );
+}
+
+function IntakeLoading() {
+  return (
+    <AuthShell>
+      <div className="flex flex-1 items-center justify-center pb-16">
+        <div className="size-7 animate-spin rounded-full border-2 border-brand/15 border-t-brand" />
+      </div>
+    </AuthShell>
   );
 }
 
 function IntakeSessionPage() {
   const params = useParams<{ key: string }>();
   const router = useRouter();
+  const { ready, user } = useAuth();
   const key = decodeURIComponent(String(params.key ?? ""));
 
   const [status, setStatus] = useState<LoadStatus>("loading");
@@ -49,6 +63,11 @@ function IntakeSessionPage() {
   const [preview, setPreview] = useState<ApiListing | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const signInToContinue = useCallback(() => {
+    rememberRedirect(`/i/${encodeURIComponent(key)}`);
+    router.push("/login");
+  }, [key, router]);
 
   const load = useCallback(async () => {
     try {
@@ -64,19 +83,28 @@ function IntakeSessionPage() {
         setStatus("not_found");
         return;
       }
+      if (cause instanceof ApiError && cause.status === 401 && !user) {
+        setStatus("signin_required");
+        return;
+      }
       setError(errorMessage(cause));
       setStatus("error");
     }
-  }, [key]);
+  }, [key, user]);
 
   useEffect(() => {
+    if (!ready) return;
     // Loading from the API is an external-system sync on mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
-  }, [load]);
+  }, [ready, load]);
 
   const submit = async (answerValues: Record<string, string[]>) => {
     if (!session) return;
+    if (!user) {
+      signInToContinue();
+      return;
+    }
 
     const remainingQuestionKeys = new Set(
       session.listings
@@ -129,11 +157,31 @@ function IntakeSessionPage() {
     }
   };
 
-  if (status === "loading") {
+  if (status === "loading" || !ready) {
+    return <IntakeLoading />;
+  }
+
+  if (status === "signin_required") {
     return (
       <AuthShell>
-        <div className="flex flex-1 items-center justify-center pb-16">
-          <div className="size-7 animate-spin rounded-full border-2 border-brand/15 border-t-brand" />
+        <div className="flex flex-1 flex-col items-center justify-center pb-16 text-center">
+          <div className="grid size-16 place-items-center rounded-full bg-mint-soft text-brand">
+            <LockIcon className="size-7" />
+          </div>
+          <h1 className="mt-6 font-serif text-[42px] leading-tight sm:text-5xl">
+            Sign in to view this request
+          </h1>
+          <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-muted">
+            This intake link is ready, but it can only be opened after you sign
+            in.
+          </p>
+          <Button
+            size="lg"
+            className="mt-10 w-full max-w-[526px]"
+            onClick={signInToContinue}
+          >
+            Sign in to continue
+          </Button>
         </div>
       </AuthShell>
     );
@@ -147,15 +195,36 @@ function IntakeSessionPage() {
             Request not found
           </h1>
           <p className="mt-4 max-w-sm text-[17px] leading-relaxed text-muted">
-            This intake link is invalid, or it belongs to a different account.
+            {user
+              ? "This intake link is invalid."
+              : "This intake link is invalid, or it belongs to an account. Sign in if this link is yours."}
           </p>
-          <Button
-            size="lg"
-            className="mt-10 w-full max-w-[526px]"
-            onClick={() => router.push("/dashboard")}
-          >
-            Back to dashboard
-          </Button>
+          {user ? (
+            <Button
+              size="lg"
+              className="mt-10 w-full max-w-[526px]"
+              onClick={() => router.push("/dashboard")}
+            >
+              Back to dashboard
+            </Button>
+          ) : (
+            <>
+              <Button
+                size="lg"
+                className="mt-10 w-full max-w-[526px]"
+                onClick={signInToContinue}
+              >
+                Sign in to continue
+              </Button>
+              <button
+                type="button"
+                onClick={() => router.push("/")}
+                className="mt-4 text-sm text-muted transition hover:text-brand"
+              >
+                Back to home
+              </button>
+            </>
+          )}
         </div>
       </AuthShell>
     );
@@ -216,7 +285,8 @@ function IntakeSessionPage() {
     (listing) => !removed.has(listing.id),
   );
   const editable = session.status === "PENDING";
-  const canRemove = editable && remainingListings.length > 1;
+  const canAct = Boolean(user);
+  const canRemove = editable && canAct && remainingListings.length > 1;
   const remainingQuestionKeys = new Set(
     remainingListings.flatMap((listing) => listing.additionalQuestions),
   );
@@ -357,7 +427,7 @@ function IntakeSessionPage() {
             ) : null}
 
             <div className="mt-auto pt-12">
-              {editable ? (
+              {editable && user ? (
                 <Button
                   size="lg"
                   className="w-full"
@@ -377,7 +447,15 @@ function IntakeSessionPage() {
                       ? "Next: Provide additional info"
                       : "Request review"}
                 </Button>
-              ) : (
+              ) : editable ? (
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={signInToContinue}
+                >
+                  Sign in to continue
+                </Button>
+              ) : user ? (
                 <Button
                   size="lg"
                   variant="soft"
@@ -386,7 +464,23 @@ function IntakeSessionPage() {
                 >
                   Back to dashboard
                 </Button>
+              ) : (
+                <Button
+                  size="lg"
+                  variant="soft"
+                  className="w-full"
+                  onClick={signInToContinue}
+                >
+                  Sign in to continue
+                </Button>
               )}
+
+              {editable && !user ? (
+                <p className="mt-4 text-center text-sm leading-relaxed text-muted">
+                  You can browse this request now. Sign in to remove products
+                  or send it for review.
+                </p>
+              ) : null}
 
               {error ? (
                 <p
@@ -471,134 +565,6 @@ function IntakeSessionPage() {
         onClose={() => setPreview(null)}
       />
     </AuthShell>
-  );
-}
-
-function ListingThumb({
-  listing,
-  className,
-}: {
-  listing: ApiListing;
-  className?: string;
-}) {
-  if (listing.productImage) {
-    return (
-      <div
-        className={cn(
-          "shrink-0 rounded-[14px] bg-mint bg-cover bg-center",
-          className,
-        )}
-        style={{ backgroundImage: `url(${listing.productImage})` }}
-        role="img"
-        aria-label={listing.documents[0]?.name || listing.brand}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "relative shrink-0 overflow-hidden rounded-[14px] bg-mint",
-        className,
-      )}
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(120%_100%_at_15%_0%,rgba(255,255,255,0.55),transparent_62%)]" />
-    </div>
-  );
-}
-
-function ListingPreview({
-  listing,
-  onClose,
-}: {
-  listing: ApiListing | null;
-  onClose: () => void;
-}) {
-  const document = listing?.documents[0];
-  const name = document?.name || listing?.slug || listing?.brand;
-  const categories = document?.metadata?.category ?? [];
-
-  return (
-    <Modal
-      open={Boolean(listing)}
-      onClose={onClose}
-      labelledBy="listing-modal-title"
-      className="sm:max-w-[680px]"
-    >
-      {listing ? (
-        <>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">
-                Healthlist listing
-              </p>
-              <h2
-                id="listing-modal-title"
-                className="mt-2 font-serif text-[34px] leading-tight sm:text-[38px]"
-              >
-                {name}
-              </h2>
-              <p className="mt-1.5 text-[15px] text-muted">
-                by {listing.brand}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="grid size-9 shrink-0 place-items-center rounded-full text-muted transition hover:bg-[#f2f4f5] hover:text-foreground"
-            >
-              <CloseIcon className="size-5" />
-            </button>
-          </div>
-
-          <div className="mt-6 grid gap-6 sm:grid-cols-[180px_1fr]">
-            <ListingThumb
-              listing={listing}
-              className="h-[230px] w-full rounded-[16px]"
-            />
-            <div>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                {document?.metadata?.price != null ? (
-                  <p className="font-serif text-[32px] leading-none">
-                    ${document.metadata.price}
-                  </p>
-                ) : (
-                  <p className="font-serif text-[32px] leading-none">
-                    {listing.brand}
-                  </p>
-                )}
-                <p className="text-sm text-muted">{listing.reviews} reviews</p>
-              </div>
-
-              {categories.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {categories.map((category) => (
-                    <span
-                      key={category}
-                      className="rounded-full bg-[#f2f6f6] px-2.5 py-1 text-[11px] text-[#4e6a6e]"
-                    >
-                      {category}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-muted">
-                {document?.excerpt ||
-                  document?.body ||
-                  "No listing details are available yet."}
-              </p>
-            </div>
-          </div>
-
-          <Button size="lg" className="mt-6 w-full" onClick={onClose}>
-            Back to request
-            <ChevronRightIcon className="size-4" />
-          </Button>
-        </>
-      ) : null}
-    </Modal>
   );
 }
 

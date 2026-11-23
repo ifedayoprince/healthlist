@@ -4,6 +4,7 @@ import db from '../common/db/index.js';
 import { intakes } from '../common/db/schema.js';
 import { eq } from 'drizzle-orm';
 import { createCursor, decodeCursor } from '../common/cursor.js';
+import { triggerAsyncId } from 'async_hooks';
 
 @Injectable()
 export class DoctorConsoleService {
@@ -112,6 +113,24 @@ export class DoctorConsoleService {
         const intake = await db.query.intakes.findFirst({
             where: {
                 id: intakeId
+            },
+             with: {
+                listings: {
+                    with: {
+                        documents: {
+                            where: {
+                                isActive: true
+                            }
+                        }
+                    }
+                },
+                user: {
+                    columns: {
+                        name: true,
+                        email: true,
+                        id: true
+                    }
+                }
             }
         });
         if (!intake) {

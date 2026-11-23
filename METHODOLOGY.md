@@ -36,3 +36,18 @@ Assistant never handles the user's health data providing privacy.
 2. User signs up with email and password only.
 3. User takes their preliminary assessment test.
 4. User clicks the "Connect my Assistant" to get instructions to connect their assistant to Healthlist.
+
+
+## Known Gaps and Improvements
+Details intentionally set aside as they are outside the scope of this PoC.
+
+1. Email verification during sign-up.
+2. Have a more robust assessment test flow that brings up questions dynamically based on the user's current answers. We could use a Decision tree to know which question to bring up next.
+
+
+## Tech Stack
+- NestJS
+- DrizzleORM
+- TypeScript
+- PostgreSQL (via ParadeDB for BM25 support)
+- NextJS

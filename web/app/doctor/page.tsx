@@ -11,6 +11,7 @@ import {
   Modal,
   StatusBadge,
   Textarea,
+  buttonClasses,
 } from "@/components/ui";
 import { ApiError, errorMessage } from "@/lib/api/client";
 import {
@@ -18,12 +19,10 @@ import {
   doctorListingName,
   doctorPatientLabel,
   doctorPatientMeta,
-  formatDoctorAnswer,
-  getDoctorAssessment,
   listDoctorIntakes,
   submitDoctorReview,
 } from "@/lib/api/doctor";
-import type { DoctorAssessment, DoctorIntake } from "@/lib/api/types";
+import type { DoctorIntake } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth";
 import { rememberRedirect } from "@/lib/redirect";
 import { cn, formatDate } from "@/lib/utils";
@@ -45,14 +44,6 @@ function DoctorConsole() {
   const [intakes, setIntakes] = useState<DoctorIntake[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-
-  const [assessmentIntake, setAssessmentIntake] =
-    useState<DoctorIntake | null>(null);
-  const [assessment, setAssessment] = useState<DoctorAssessment>(null);
-  const [assessmentState, setAssessmentState] = useState<
-    "idle" | "loading" | "ready" | "error"
-  >("idle");
-  const [assessmentError, setAssessmentError] = useState("");
 
   const [decision, setDecision] = useState<{
     intake: DoctorIntake;
@@ -89,28 +80,6 @@ function DoctorConsole() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [isDenied, load]);
-
-  const openAssessment = async (intake: DoctorIntake) => {
-    setAssessmentIntake(intake);
-    setAssessment(null);
-    setAssessmentError("");
-    setAssessmentState("loading");
-
-    if (!intake.userId) {
-      setAssessmentState("error");
-      setAssessmentError("This intake has no patient attached.");
-      return;
-    }
-
-    try {
-      const data = await getDoctorAssessment(intake.userId);
-      setAssessment(data);
-      setAssessmentState("ready");
-    } catch (cause) {
-      setAssessmentError(errorMessage(cause));
-      setAssessmentState("error");
-    }
-  };
 
   const openDecision = (intake: DoctorIntake, isApproved: boolean) => {
     setDecision({ intake, isApproved });
@@ -295,7 +264,6 @@ function DoctorConsole() {
               <DoctorCase
                 key={intake.id}
                 intake={intake}
-                onAssessment={() => void openAssessment(intake)}
                 onDecision={(isApproved) =>
                   openDecision(intake, isApproved)
                 }
@@ -304,85 +272,6 @@ function DoctorConsole() {
           )}
         </div>
       </main>
-
-      <Modal
-        open={Boolean(assessmentIntake)}
-        onClose={() => setAssessmentIntake(null)}
-        labelledBy="assessment-modal-title"
-        className="sm:max-w-[640px]"
-      >
-        {assessmentIntake ? (
-          <>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand">
-                  Patient assessment
-                </p>
-                <h2
-                  id="assessment-modal-title"
-                  className="mt-2 font-serif text-[32px] leading-tight"
-                >
-                  {doctorPatientLabel(assessmentIntake)}
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  {doctorPatientMeta(assessmentIntake)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAssessmentIntake(null)}
-                className="rounded-full px-3 py-1.5 text-sm text-muted transition hover:bg-[#f2f4f5] hover:text-foreground"
-              >
-                Close
-              </button>
-            </div>
-
-            {assessmentState === "loading" ? (
-              <div className="flex justify-center py-10">
-                <div className="size-6 animate-spin rounded-full border-2 border-brand/15 border-t-brand" />
-              </div>
-            ) : assessmentState === "error" ? (
-              <p className="mt-6 text-sm text-[#c25d5d]">
-                {assessmentError}
-              </p>
-            ) : !assessment ? (
-              <p className="mt-6 text-sm text-muted">
-                This patient hasn&apos;t completed an assessment yet.
-              </p>
-            ) : assessment.assessmentAnswers.length === 0 ? (
-              <p className="mt-6 text-sm text-muted">
-                No assessment answers are on file.
-              </p>
-            ) : (
-              <div className="mt-5 divide-y divide-line">
-                {assessment.assessmentAnswers.map((answer, index) => (
-                  <div
-                    key={`${answer.assessmentQuestion.key}-${index}`}
-                    className="py-3.5"
-                  >
-                    <p className="text-[13px] leading-relaxed text-muted">
-                      {answer.assessmentQuestion.question}
-                    </p>
-                    <p className="mt-1.5 text-[15px] leading-relaxed">
-                      {formatDoctorAnswer(
-                        answer.answer,
-                        answer.assessmentQuestion,
-                      )}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Button
-              className="mt-6 w-full"
-              onClick={() => setAssessmentIntake(null)}
-            >
-              Done
-            </Button>
-          </>
-        ) : null}
-      </Modal>
 
       <Modal
         open={Boolean(decision)}
@@ -469,11 +358,9 @@ function DoctorConsole() {
 
 function DoctorCase({
   intake,
-  onAssessment,
   onDecision,
 }: {
   intake: DoctorIntake;
-  onAssessment: () => void;
   onDecision: (isApproved: boolean) => void;
 }) {
   return (
@@ -503,21 +390,26 @@ function DoctorCase({
       </h3>
       <div className="mt-2 flex flex-wrap gap-2">
         {intake.listings.map((listing) => (
-          <span
+          <Link
             key={listing.id}
-            className="rounded-full bg-[#f4f6f7] px-3 py-1.5 text-sm text-[#3f4649]"
+            href={`/doctor/intakes/${encodeURIComponent(intake.id)}`}
+            className="rounded-full bg-[#f4f6f7] px-3 py-1.5 text-sm text-[#3f4649] transition hover:bg-[#e9eff0] hover:text-foreground"
+            title="Open products and assessment"
           >
             {doctorListingName(listing)}
             <span className="text-muted"> · {listing.brand}</span>
-          </span>
+          </Link>
         ))}
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-        <Button size="sm" variant="outline" onClick={onAssessment}>
+        <Link
+          href={`/doctor/intakes/${encodeURIComponent(intake.id)}`}
+          className={buttonClasses("primary", "sm")}
+        >
           <DocIcon className="size-4" />
-          View assessment
-        </Button>
+          Review request
+        </Link>
         <Button size="sm" onClick={() => onDecision(true)}>
           Approve
         </Button>

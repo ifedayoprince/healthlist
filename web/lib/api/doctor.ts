@@ -16,6 +16,12 @@ export async function listDoctorIntakes(): Promise<DoctorIntake[]> {
   return payload.data ?? [];
 }
 
+export function getDoctorIntake(intakeId: string) {
+  return apiFetch<DoctorIntake>(
+    `/doctor-console/intakes/${encodeURIComponent(intakeId)}`,
+  );
+}
+
 export function getDoctorAssessment(userId: string) {
   return apiFetch<DoctorAssessment>(
     `/doctor-console/assessment/${encodeURIComponent(userId)}`,

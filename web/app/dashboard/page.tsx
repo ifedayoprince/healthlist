@@ -101,6 +101,16 @@ function Dashboard() {
 
   const payments = paymentsFor(user.id);
 
+  const addSamplePayment = () => {
+    const samples = [
+      { brand: "Visa", last4: "4242", expiry: "12/29" },
+      { brand: "Mastercard", last4: "4444", expiry: "09/28" },
+      { brand: "Amex", last4: "0005", expiry: "03/30" },
+    ];
+    addPaymentMethod(samples[payments.length % samples.length], user.id);
+    setTab("payments");
+  };
+
   const retry = () => {
     setIntakeState("loading");
     void loadIntakes();
@@ -219,10 +229,20 @@ function Dashboard() {
                       payments.length === 1 ? "method" : "methods"
                     }`}
               </p>
-              <Button size="sm" onClick={() => setPaymentOpen(true)}>
-                <PlusIcon className="size-4" />
-                Add method
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addSamplePayment}
+                >
+                  <SparkleIcon className="size-4" />
+                  Sample card
+                </Button>
+                <Button size="sm" onClick={() => setPaymentOpen(true)}>
+                  <PlusIcon className="size-4" />
+                  Add method
+                </Button>
+              </div>
             </div>
 
             {payments.length === 0 ? (
@@ -241,6 +261,13 @@ function Dashboard() {
                   <PlusIcon className="size-4" />
                   Add payment method
                 </Button>
+                <button
+                  type="button"
+                  onClick={addSamplePayment}
+                  className="mx-auto mt-3 block text-sm font-medium text-brand underline-offset-4 transition hover:underline"
+                >
+                  Or use a sample card
+                </button>
               </div>
             ) : (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
