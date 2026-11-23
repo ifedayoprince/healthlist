@@ -1,55 +1,84 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { AuthUser } from '../common/decorators/current-user.decorator.js';
 import db from '../common/db/index.js';
-import { assessmentAnswers, assessmentQuestions, assessments } from '../common/db/schema.js';
+import { assessmentAnswers } from '../common/db/schema.js';
 import { and, eq, sql } from 'drizzle-orm';
-import { AssessmentTestItem } from '../common/types.js';
 import { SubmitOrUpdateAnswerDto } from './dto/submit-or-update-answer.dto.js';
-import { formatAnswer } from '../common/question.js';
+import { formatAnswer } from '../common/questions.js';
+import logger from '../common/logger.js';
 
 @Injectable()
 export class AssessmentService {
     async submitAnswer(user: AuthUser, dto: SubmitOrUpdateAnswerDto) {
-        const [assessment] = await db.select().from(assessments).where(eq(assessments.userId, user.id));
-        const [question] = await db.select().from(assessmentQuestions).where(eq(assessmentQuestions.key, dto.questionKey));
+        await db.transaction(async (tx) => {
+            const assessment = await tx.query.assessments.findFirst({
+                where: {
+                    userId: user.id
+                }
+            });
+            if (!assessment)
+                throw new InternalServerErrorException(`Assessment entry not found.`);
 
-        if (!question) {
-            throw new BadRequestException(`Question ${dto.questionKey} does not exist.`);
-        }
+            const question = await tx.query.assessmentQuestions.findFirst({
+                where: {
+                    key: dto.questionKey
+                }
+            });
 
-        const existingAnswer = await db
-            .select()
-            .from(assessmentAnswers)
-            .where(and(
-                eq(assessmentAnswers.assessmentId, assessment.id),
-                eq(assessmentAnswers.assessmentQuestionId, question.id)
-            ));
+            if (!question) {
+                throw new BadRequestException(`Question ${dto.questionKey} does not exist.`);
+            }
 
-        if (existingAnswer.length > 0) {
-            throw new BadRequestException(`An answer to this assessment question has already been provided.`)
-        }
+            const existingAnswer = await tx
+                .select()
+                .from(assessmentAnswers)
+                .where(and(
+                    eq(assessmentAnswers.assessmentId, assessment.id),
+                    eq(assessmentAnswers.assessmentQuestionId, question.id)
+                ));
 
-        try {
-            await db
-                .insert(assessmentAnswers)
-                .values({
-                    assessmentId: assessment.id,
-                    assessmentQuestionId: question.id,
-                    answer: formatAnswer(
-                        dto.answer,
-                        question.type
-                    )
+            if (existingAnswer.length > 0) {
+                throw new BadRequestException(`An answer to this assessment question has already been provided.`)
+            }
+
+            try {
+                await tx
+                    .insert(assessmentAnswers)
+                    .values({
+                        assessmentId: assessment.id,
+                        assessmentQuestionId: question.id,
+                        answer: formatAnswer(
+                            dto.answer,
+                            question.type
+                        )
+                    });
+
+                return { success: 'OK' }
+            } catch (e: any) {
+                logger.error({
+                    message: e.message,
+                    stack: e.stack,
+                    context: AssessmentService.name
                 });
-
-            return { success: 'OK' }
-        } catch (e) {
-            throw new InternalServerErrorException(`Error saving answer to question.`)
-        }
+                throw new InternalServerErrorException(`Error saving answer to question.`)
+            }
+        })
     }
 
     async updateAnswer(user: AuthUser, dto: SubmitOrUpdateAnswerDto) {
-        const [assessment] = await db.select().from(assessments).where(eq(assessments.userId, user.id));
-        const [question] = await db.select().from(assessmentQuestions).where(eq(assessmentQuestions.key, dto.questionKey));
+        const assessment = await db.query.assessments.findFirst({
+            where: {
+                userId: user.id
+            }
+        });
+        if (!assessment)
+            throw new InternalServerErrorException(`Assessment entry not found.`);
+
+        const question = await db.query.assessmentQuestions.findFirst({
+            where: {
+                key: dto.questionKey
+            }
+        });
 
         if (!question) {
             throw new BadRequestException(`Question ${dto.questionKey} does not exist.`);
@@ -78,36 +107,43 @@ export class AssessmentService {
                 })
 
             return { success: 'OK' }
-        } catch (e) {
+        } catch (e: any) {
+            logger.error({
+                message: e.message,
+                stack: e.stack,
+                context: AssessmentService.name
+            });
             throw new InternalServerErrorException(`Error saving answer to question.`)
         }
     }
 
     async getAssessmentTest(user: AuthUser) {
-        const [assessment] = await db.select().from(assessments).where(eq(assessments.userId, user.id));
-        const result = await db.execute<AssessmentTestItem>(
-            sql`
-SELECT 
-	aq.question,
-	aq.type,
-	aq.options,
-	aq.key,
-	aq.is_required AS isRequired,
-	aa.answer,
-	aa.answered_at AS answeredAt
-FROM assessment_questions AS aq
-LEFT JOIN assessment_answers as aa
-	ON aa.assessment_question_id = aq.id
-	WHERE
-		aa.assessment_id = ${assessment.id}
-`);
-        const data = result.rows;
-        return {
-            required: {
-                pending: data.filter(entry => entry.isRequired && !entry.answer),
-                completed: data.filter(entry => entry.isRequired && entry.answer)
+        const assessment = await db.query.assessments.findFirst({
+            where: {
+                userId: user.id
+            }
+        });
+        if (!assessment)
+            throw new InternalServerErrorException(`Assessment entry not found.`);
+
+        const result = await db.query.assessmentQuestions.findMany({
+            where: {
+                isPreliminary: true
             },
-            additional: data.filter(entry => !entry.isRequired)
+            with: {
+                assessmentAnswers: {
+                    where: {
+                        assessmentId: assessment!.id
+                    }
+                }
+            }
+        });
+
+        return {
+            preliminary: {
+                pending: result.filter(entry => entry.isRequired && entry.assessmentAnswers.length == 0),
+                completed: result.filter(entry => entry.isRequired && entry.assessmentAnswers.length > 0)
+            }
         }
     }
 }

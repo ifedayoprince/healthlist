@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-import { relations } from "drizzle-orm/_relations";
 import { boolean, integer, jsonb, pgEnum, pgTable, text, timestamp, unique, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -40,6 +39,7 @@ export const assessmentQuestions = pgTable("assessment_questions", {
     id: uuid('id').defaultRandom().primaryKey(),
     key: varchar('key', { length: 50 }).notNull().unique(),
     question: text('question').notNull(),
+    isPreliminary: boolean('is_preliminary').default(false).notNull(),
     isRequired: boolean('is_required').default(false).notNull(),
     type: questionTypesEnum('type').notNull(),
     options: jsonb('options').$type<{
@@ -57,8 +57,8 @@ export const assessmentAnswers = pgTable("assessment_answers", {
         .notNull()
         .references(() => assessmentQuestions.id),
     answer: jsonb('answer')
-        .$type<string | string[] | boolean>(),
-    answeredAt: timestamp('answered_at', { withTimezone: true }).defaultNow()
+        .$type<string | string[] | boolean>().notNull(),
+    answeredAt: timestamp('answered_at', { withTimezone: true }).defaultNow().notNull()
 }, (table) => [
     unique().on(table.assessmentId, table.assessmentQuestionId)
 ]);
@@ -71,7 +71,7 @@ export const listings = pgTable("listings", {
     brand: varchar('brand', { length: 20 }).notNull(),
     reviews: integer('reviews').default(0).notNull(),
     productImage: varchar('product_image', { length: 255 }),
-    requiredInfo: varchar("required_info")
+    additionalQuestions: varchar("additional_questions")
         .array()
         .default([])
         .notNull(),
@@ -126,13 +126,15 @@ export const intakeStatusEnum = pgEnum("intake_status", [
 export const intakes = pgTable("intakes", {
     id: uuid('id').defaultRandom().primaryKey(),
     key: varchar('key', { length: 50 }).notNull().unique(),
-    userId: uuid('user_id').notNull().references(() => users.id),
-    createdAt: timestamp('created_at').defaultNow(),
+    userId: uuid('user_id').references(() => users.id),
     status: intakeStatusEnum('status')
-        .default('PENDING')
-        .notNull(),
-    doctorRemark: text('doctor_remark')
+    .default('PENDING')
+    .notNull(),
+    doctorRemark: text('doctor_remark'),
+    createdAt: timestamp('created_at').defaultNow(),
+    submittedAt: timestamp('submitted_at'),
 });
+export type Intake = typeof intakes.$inferSelect;
 
 export const intakeListings = pgTable("intake_listings", {
     id: uuid("id").defaultRandom().primaryKey(),
@@ -147,86 +149,3 @@ export const intakeListings = pgTable("intake_listings", {
 }, (table) => [
     unique().on(table.listingId, table.intakeId)
 ])
-
-export const usersRelations = relations(
-    users,
-    ({ one, many }) => ({
-        assessment: one(assessments),
-        intakes: many(intakes)
-    })
-);
-
-export const assessmentsRelations = relations(
-    assessments,
-    ({ one, many }) => ({
-        user: one(users, {
-            fields: [assessments.userId],
-            references: [users.id]
-        }),
-        assessmentAnswers: many(assessmentAnswers)
-    })
-);
-
-export const assessmentAnswersRelations = relations(
-    assessmentAnswers,
-    ({ one }) => ({
-        assessment: one(assessments, {
-            fields: [assessmentAnswers.assessmentId],
-            references: [assessments.id]
-        }),
-        assessmentQuestion: one(assessmentQuestions, {
-            fields: [assessmentAnswers.assessmentQuestionId],
-            references: [assessmentQuestions.id]
-        })
-    })
-);
-
-export const assessmentQuestionsRelations = relations(
-    assessmentQuestions,
-    ({ many }) => ({
-        assessmentAnswers: many(assessmentAnswers)
-    })
-);
-
-export const intakesRelations = relations(
-    intakes,
-    ({ one, many }) => ({
-        user: one(users, {
-            fields: [intakes.userId],
-            references: [users.id]
-        }),
-        intakeListings: many(intakeListings)
-    })
-)
-
-export const listingsRelations = relations(
-    listings,
-    ({ many }) => ({
-        intakeListings: many(intakeListings),
-        listingDocuments: many(listingDocuments)
-    })
-)
-
-export const listingDocumentsRelations = relations(
-    listingDocuments,
-    ({ one }) => ({
-        listing: one(listings, {
-            fields: [listingDocuments.listingId],
-            references: [listings.id]
-        })
-    })
-)
-
-export const intakeListingsRelations = relations(
-    intakeListings,
-    ({ one }) => ({
-        intake: one(intakes, {
-            fields: [intakeListings.intakeId],
-            references: [intakes.id]
-        }),
-        listing: one(listings, {
-            fields: [intakeListings.listingId],
-            references: [listings.id]
-        })
-    })
-);

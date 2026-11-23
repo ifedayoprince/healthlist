@@ -2,6 +2,7 @@ import { envsafe, str } from "envsafe";
 
 const env = envsafe({
     DATABASE_URL: str(),
+    FRONTEND_URL: str(),
 
     /** 32 byte base64url string */
     MCP_SERVER_TOKEN: str(),

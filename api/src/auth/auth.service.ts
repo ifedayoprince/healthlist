@@ -90,7 +90,8 @@ SELECT
     aq.key
 FROM assessment_questions AS aq
 WHERE
-    aq.is_required = TRUE
+    aq.is_preliminary = TRUE
+    AND aq.is_required = TRUE
     AND NOT EXISTS (
         SELECT 1
         FROM assessment_answers as aa

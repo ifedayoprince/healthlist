@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, Param, Get } from '@nestjs/common';
 import { IntakeService } from './intake.service.js';
-import { CreateIntakeDto } from './dto/create-intake.dto.js';
-import { UpdateIntakeDto } from './dto/update-intake.dto.js';
+import { CreateIntakeSessionDto } from './dto/create-intake.dto.js';
+import { AllowMCPAccess } from '../common/decorators/allow-mpc-access.decorator.js';
+import { type AuthUser, CurrentUser } from '../common/decorators/current-user.decorator.js';
+import { SubmitIntakeSessionDto } from './dto/submit-intake.dto.js';
 
 @Controller('intake')
 export class IntakeController {
-  constructor(private readonly intakeService: IntakeService) {}
+  constructor(private readonly intakeService: IntakeService) { }
 
   @Post()
-  create(@Body() createIntakeDto: CreateIntakeDto) {
-    return this.intakeService.create(createIntakeDto);
+  @AllowMCPAccess()
+  @HttpCode(200)
+  async create(@Body() createIntakeDto: CreateIntakeSessionDto) {
+    return await this.intakeService.create(createIntakeDto);
   }
 
-  @Get()
-  findAll() {
-    return this.intakeService.findAll();
+  @Get(':key')
+  @HttpCode(200)
+  async getIntakeSession(
+    @CurrentUser() user: AuthUser,
+    @Param('key') key: string
+  ) {
+    return await this.intakeService.getIntakeSession(user, key);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.intakeService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateIntakeDto: UpdateIntakeDto) {
-    return this.intakeService.update(+id, updateIntakeDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.intakeService.remove(+id);
+  @Post('submit')
+  async submitListing(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: SubmitIntakeSessionDto
+  ) {
+    return await this.intakeService.submitListing(user, dto);
   }
 }
