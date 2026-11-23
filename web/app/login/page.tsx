@@ -31,8 +31,8 @@ export default function LoginPage() {
     if (!ready || !user || redirecting.current) return;
 
     if (user.role === "DOCTOR") {
-      const next = consumeRedirect();
-      router.replace(next ?? "/doctor");
+      consumeRedirect();
+      router.replace("/doctor");
       return;
     }
 
@@ -80,8 +80,8 @@ export default function LoginPage() {
       redirecting.current = true;
 
       if (sessionUser.role === "DOCTOR") {
-        const next = consumeRedirect();
-        router.replace(next ?? "/doctor");
+        consumeRedirect();
+        router.replace("/doctor");
         return;
       }
 

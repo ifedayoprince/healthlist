@@ -259,8 +259,7 @@ function IntakeSessionPage() {
               <div className="mt-6 rounded-[18px] bg-[#eef9f2] p-4 text-sm leading-relaxed text-[#2f7d52]">
                 <p className="font-medium">Approved for purchase.</p>
                 <p className="mt-1">
-                  Your order is moving ahead. Your assistant can help you track
-                  delivery.
+                  Your order is moving ahead. A licensed pharmacy will mail your prescription within the next 3 - 4 days.
                 </p>
                 {session.doctorRemark ? (
                   <p className="mt-3 text-[#3f6b53]">

@@ -15,7 +15,13 @@ export class ApiError extends Error {
 export function errorMessage(error: unknown) {
   if (error instanceof ApiError) {
     if (error.status === 401) {
-      return "Your session expired. Please sign in again.";
+      // Only session/token failures get the "expired" wording. A failed
+      // sign-in is also a 401, and its message ("Invalid credentials.")
+      // should reach the user unchanged.
+      if (/session|token/i.test(error.message)) {
+        return "Your session expired. Please sign in again.";
+      }
+      return error.message || "Your session expired. Please sign in again.";
     }
     return error.message;
   }
