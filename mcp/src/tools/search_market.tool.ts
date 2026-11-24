@@ -4,7 +4,7 @@ import { api } from "../constant.js";
 import { Listing } from "../types/listing.types.js";
 
 export const name = "search_market";
-export const description = "Search the Healthlist marketplace for listings/products that match a given query";
+export const description = "Search the Healthlist marketplace for listings/products that match a given query. All prices are in USD";
 export const input = z.object({
     search: z.string(),
     minPrice: z.number().optional(),

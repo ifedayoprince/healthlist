@@ -4,7 +4,7 @@ import { api } from "../constant.js";
 import { Listing } from "../types/listing.types.js";
 
 export const name = "fetch_listing";
-export const description = "Fetch a particular product listing from Healthlist.";
+export const description = "Fetch a particular product listing from Healthlist. All prices are in USD";
 export const input = z.object({
     listingId: z.string()
 });
