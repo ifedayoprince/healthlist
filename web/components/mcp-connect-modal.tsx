@@ -17,32 +17,38 @@ import {
 
 const ASSISTANTS = [
   {
-    id: "chatgpt",
-    label: "ChatGPT",
-    steps: [
-      "Open ChatGPT, then go to Settings → Apps & connectors.",
-      "Turn on Developer mode and choose Create connector.",
-      "Paste the Healthlist MCP URL and save the connector.",
-      "In a new chat, ask: “Find me a GLP-1 product on Healthlist.”",
-    ],
-  },
-  {
     id: "claude",
     label: "Claude",
     steps: [
-      "Open Claude, then go to Settings → Connectors.",
-      "Choose Add custom connector.",
-      "Paste the Healthlist MCP URL and confirm.",
-      "Ask Claude to search the Healthlist marketplace for you.",
+      "Open Claude and go to Settings → Connectors (claude.ai/customize/connectors).",
+      "Select + Add → Add custom connector.",
+      "Name it Healthlist and paste the MCP URL above.",
+      "Select Continue. When Claude checks authentication, choose No sign in — Healthlist needs no credentials.",
+      "Select Add. Then open a new chat, choose + → Connectors, and enable Healthlist.",
+      "Ask: “Find me sleep products on Healthlist.”",
+    ],
+  },
+  {
+    id: "chatgpt",
+    label: "ChatGPT",
+    steps: [
+      "Open ChatGPT on the web and go to Plugins.",
+      "Select + → Add custom MCP server.",
+      "Name it Healthlist and paste the MCP URL above.",
+      "Healthlist needs no authentication — leave credentials blank if asked.",
+      "Acknowledge the security warning and select Create as a plugin.",
+      "Review the discovered tools and install the plugin.",
+      "In a chat, type @, select Healthlist, and ask it to search the marketplace.",
     ],
   },
   {
     id: "other",
     label: "Other",
+    note: "Any client that supports remote MCP over Streamable HTTP will work.",
     steps: [
       "Open the MCP or connector settings in your assistant.",
-      "Choose Add remote MCP server.",
-      "Paste the Healthlist MCP URL and save.",
+      "Add a remote MCP server over Streamable HTTP.",
+      "Paste the Healthlist MCP URL. No API key or OAuth is required.",
       "Start a chat and ask your assistant to search Healthlist.",
     ],
   },
@@ -57,7 +63,7 @@ export function McpConnectModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const [active, setActive] = useState<AssistantId>("chatgpt");
+  const [active, setActive] = useState<AssistantId>("claude");
   const [copied, setCopied] = useState(false);
 
   const assistant =
@@ -78,7 +84,7 @@ export function McpConnectModal({
       open={open}
       onClose={onClose}
       labelledBy="mcp-modal-title"
-      className="sm:max-w-[600px]"
+      className="sm:max-w-[640px]"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -103,9 +109,9 @@ export function McpConnectModal({
       </div>
 
       <p className="mt-4 text-[15px] leading-relaxed text-muted">
-        Healthlist works inside ChatGPT, Claude, and any assistant that supports
-        MCP connectors. Add this URL once — your assistant can then search the
-        marketplace and create intake requests for you.
+        Healthlist works inside Claude, ChatGPT, and any assistant that supports
+        MCP connectors. The endpoint is public: add the URL once and your
+        assistant can search the marketplace and create intake requests for you.
       </p>
 
       <div className="mt-6 flex items-center gap-3 rounded-[18px] bg-[#f3f6f7] p-2 pl-4">
@@ -131,6 +137,11 @@ export function McpConnectModal({
         </Button>
       </div>
 
+      <p className="mt-2 flex items-center gap-1.5 text-[12px] text-muted">
+        <span className="size-1.5 rounded-full bg-brand" />
+        Public MCP endpoint — no sign-in or API key required.
+      </p>
+
       <div className="mt-6 flex gap-1 rounded-full bg-[#f3f5f6] p-1">
         {ASSISTANTS.map((item) => (
           <button
@@ -149,7 +160,13 @@ export function McpConnectModal({
         ))}
       </div>
 
-      <ol className="mt-6 space-y-4">
+      {"note" in assistant && assistant.note ? (
+        <div className="mt-4 rounded-[14px] border border-[#eadfc9] bg-[#fffaf0] px-4 py-3 text-[12.5px] leading-relaxed text-[#7b6539]">
+          {assistant.note}
+        </div>
+      ) : null}
+
+      <ol className="mt-5 space-y-4">
         {assistant.steps.map((step, index) => (
           <li key={step} className="flex gap-3.5">
             <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-mint-soft text-[11px] font-semibold text-brand">

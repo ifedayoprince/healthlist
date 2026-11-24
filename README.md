@@ -7,6 +7,41 @@ Healthlist is a proof of concept for a different kind of marketplace. Instead of
 Inspired by the vision behind **Bask.Health's acquisition of Telehealth.com**.
 
 > This is a proof of concept. It uses fictional products and is not a medical service or a production-ready health platform.
+> Not affiliated with Bask.health or telehealth.com
+
+## What it looks like
+
+**The patient opens the link their assistant created, checks the products, and answers a few extra questions.**
+
+<table>
+  <tr>
+    <td width="50%"><img src="images/screenshots/01-patient_intake_request.png" alt="Patient viewing an intake request with three products" width="100%" /></td>
+    <td width="50%"><img src="images/screenshots/02-patient_intake_assessment.png" alt="Patient answering additional health questions" width="100%" /></td>
+  </tr>
+  <tr>
+    <td><sub><b>1. The request.</b> The assistant's picks land on one page. The patient can remove anything they don't want.</sub></td>
+    <td><sub><b>2. A few more questions.</b> If the products need more context, the patient answers before submitting.</sub></td>
+  </tr>
+</table>
+
+**A doctor sees the products and the patient's answers side by side, then approves or declines with a note.**
+
+<table>
+  <tr>
+    <td width="50%"><img src="images/screenshots/05-doctor_intake_view.png" alt="Doctor reviewing an intake with products on the left and assessment answers on the right" width="100%" /></td>
+    <td width="50%"><img src="images/screenshots/06-doctor_intake_approval.png" alt="Doctor approving an intake with a note for the patient" width="100%" /></td>
+  </tr>
+  <tr>
+    <td><sub><b>3. Clinical review.</b> Products on the left, the patient's assessment on the right — the whole decision in one view.</sub></td>
+    <td><sub><b>4. The decision.</b> Approve or decline, with an optional note that goes back to the patient.</sub></td>
+  </tr>
+</table>
+
+**The patient sees the outcome and the doctor's note on the same link.**
+
+<p align="center">
+  <img src="images/screenshots/07-patient_approved_intake.png" alt="Patient viewing an approved intake request with the doctor's note" width="70%" />
+</p>
 
 ## The idea
 
@@ -25,7 +60,7 @@ The MCP server is the front door to the market. The web app is the private room 
 | `api/` | NestJS API: auth, assessments, listings, intakes, doctor console, Drizzle schema, migrations, seed data. Hand-written. |
 | `mcp/` | MCP server exposing `search_market`, `fetch_listing`, and `create_session` to an AI assistant. Hand-written. |
 | `web/` | Next.js patient and clinician app. Built with a coding agent from Figma reference designs. |
-| `mock/` | The original Figma/design references and a Sketch draft used to build the web app. |
+| `images/` | Screenshots of the finished flows, plus the original Figma references and a Sketch draft used to build the web app. |
 | `METHODOLOGY.md` | The original thinking behind the PoC, flows, and known gaps. |
 
 ## Architecture
@@ -84,7 +119,7 @@ Assistant (ChatGPT, Claude, or any MCP client)
 
 ## Design references
 
-The web app was built from Figma designs. The exported references live in [`mock/`](mock): home, join, assessment, and intake request screens.
+The screenshots above live in [`images/screenshots/`](images/screenshots). The original Figma exports and the Sketch draft used to build the web app are in [`images/`](images).
 
 ## Credits
 
